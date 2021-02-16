@@ -1,7 +1,7 @@
-name: "Human_Development_ATACseq_bulk"
+name: Human_Development_ATACseq_bulk
 output_dir: ../docs
 navbar:
-  title: "Human_Development_ATACseq_bulk"
+  title: Human_Development_ATACseq_bulk
   left:
   - text: Home
     href: index.html
@@ -9,6 +9,10 @@ navbar:
     href: about.html
   - text: License
     href: license.html
+  right:
+  - icon: fa-github
+    text: Source code
+    href: https://github.com/evangelynsim/Human_Development_ATACseq_bulk
 output:
   workflowr::wflow_html:
     toc: yes
