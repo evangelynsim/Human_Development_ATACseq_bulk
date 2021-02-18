@@ -1,0 +1,24 @@
+---
+title: "Generate reference genome for nuclei RNA-seq"
+author: "Evangelyn Sim"
+date: "2/15/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+Nuclei ATAC-seq generates sequencing reads that map across a whole gene (intron and exon). Reference genome targeting 1kbp up-/down-stream of transcription start site was generated to allow the idenfication of genes from DNA sequencing reads.
+
+
+```{bash}
+#!/bin/bash
+
+grep -w gene *.gtf | cut -f1,4,5,7,9| cut -d '"' -f-2,6 \
+        | sed 's/gene_id "//' | tr '"' '_'\
+        | awk '{OFS="\t"}  {print $5,$1,$2,$3,$4}' > Homo_sapiens.GRCh38.96.fulllength.saf
+
+```

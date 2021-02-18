@@ -1,0 +1,380 @@
+---
+title: "EdgeR, Scatter Plot and Homer Analysis of Female versus Male (Peaks)"
+author: "Evangelyn Sim"
+date: "2/15/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+## Introduction
+
+In the GEO submission, 4 processed files (peaks) were uploaded. 
+
+1. humanATAC_peaks_cov2_rmBL.bed.saf.pe.q30.mx.all_unfiltered.csv
+2. humanATAC_peaks_cov2_rmBL.bed.saf.pe.q30.mx.all.fix_filt.csv
+3. humanATAC_peaks_cov2_rmBL.bed.saf.pe.q30.mx.hum.fix_filt.csv
+4. humanATAC_peaks_cov2_rmBL.bed.saf.pe.q30.mx.MvsF.fix_filt.csv
+
+
+They have been uploaded in the /output folder and will be used below to generate different figures.
+
+
+### Used libraries and functions
+
+* bedtools/2.27.1
+* Homer
+
+```{r}
+library(edgeR)
+library(limma)
+library(dplyr)
+
+library(ggplot2)
+library(moonBook)
+library(webr)
+library(waffle)
+library(extrafont)
+library(grid)
+library(gridExtra)
+library(cowplot)
+library(ggpubr)
+library(RColorBrewer)
+
+```
+
+
+### Read files 
+```{r}
+
+PRIOR = 20
+FDR = 0.05
+
+rm1 <- read.csv("/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/GITHUB/Human_Development_ATACseq_bulk/output/humanATAC_peaks_cov2_rmBL.bed.saf.pe.q30.mx.hum.fix_filt.csv", row.names = 1)
+
+info = read.delim("/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/GITHUB/Human_Development_ATACseq_bulk/output/ATACseq_samplesheet.txt", header = TRUE, sep = "\t", stringsAsFactors = F)
+info = info[c(8:20),]
+
+m = match(info$ID,names(rm1))
+rm2 = rm1[,m]
+
+rm1 = rm2
+
+sampleinfo = info
+levels(factor(sampleinfo$Group))
+levels(factor(sampleinfo$BinSex))
+table(colnames(rm2)==sampleinfo$ID)
+
+matrix = rm2
+pheno = info
+
+```
+
+
+# Sex-specific Differentially Regulated Genes in Adult
+
+## Differential gene expresison analysis
+```{r}
+
+attach(pheno)
+design = model.matrix(as.formula("~ 0  + BinSex + Batch"))
+detach(pheno)
+design
+
+D = DGEList(counts=matrix)
+D = calcNormFactors(D)
+D = estimateGLMCommonDisp(D, design)
+D = estimateGLMTagwiseDisp(D, design, prior.df = PRIOR)
+fit = glmFit(D, design, prior.count = PRIOR)
+
+Contrast = makeContrasts(FAdultvsMAdult = BinSexAdult_M - BinSexAdult_F,
+                         levels=design)
+
+res = list()
+contrast.name = colnames(Contrast)
+
+for(i in 1:length(contrast.name)){
+  lrt = glmLRT(fit, contrast = Contrast[,i])   
+  
+  results = lrt$table
+  disp = lrt$dispersion
+  fitted.vals = lrt$fitted.values
+  coefficients = lrt$coefficients
+  
+  results$adj.p.value = p.adjust(p = results$PValue, method = "fdr" )
+  table(row.names(results) == row.names(fitted.vals))
+  
+  Name = row.names(results)
+  res0 = cbind(Name, results, disp, fitted.vals, coefficients)
+  res[[i]] = res0[order(res0$adj.p.value),]
+
+  res[[i]]$Chr= gsub(".*_|:.*$", "", rownames(res[[i]]))
+  
+  res[[i]] = mutate(res[[i]], cs= ifelse(res[[i]]$adj.p.value <= 0.05 & res[[i]]$logFC <= 0 & res[[i]]$Chr=="X", "tan2",
+                                         ifelse(res[[i]]$adj.p.value <= 0.05 & res[[i]]$logFC <= 0 & res[[i]]$Chr=="Y", "tan2", 
+                                                ifelse(res[[i]]$adj.p.value <= 0.05 & res[[i]]$logFC >= 0 & res[[i]]$Chr=="Y", "tan2",
+                                                       ifelse(res[[i]]$adj.p.value <= 0.05 & res[[i]]$logFC >= 0 & res[[i]]$Chr=="X", "tan2",
+                                                              ifelse(res[[i]]$adj.p.value <= 0.05 & res[[i]]$logFC >= 0 ,"dodgerblue1",
+                                                                     ifelse(res[[i]]$adj.p.value <= 0.05 & res[[i]]$logFC <= 0 , "deeppink1", "grey80")))))))
+  
+  mxFDR = res[[i]][res[[i]]$adj.p.value <= FDR,]
+  mxFDR_Up = mxFDR[mxFDR$logFC>0,]
+  mxFDR_Dn = mxFDR[mxFDR$logFC<0,]
+  
+  res[[i]]= mutate(res[[i]], FDR= nrow(mxFDR))
+  res[[i]]= mutate(res[[i]], FDRup= nrow(mxFDR_Up))
+  res[[i]]= mutate(res[[i]], FDRdn= nrow(mxFDR_Dn))
+
+  
+}
+
+for(i in 1:length(contrast.name)){
+  print(contrast.name[i])
+  print(table(res[[i]]$adj.p.value < 0.05))
+}
+
+```
+
+```{r, fig.height=4, fig.width= 4}
+
+par(mfrow=c(1,1))
+
+for(i in 1:length(contrast.name)){
+
+  plot(res[[i]]$logCPM, res[[i]]$logFC, pch=20, cex=1, col=res[[i]]$cs, 
+        xlab = "logCPM", ylab = "logFC",
+        main = paste0(contrast.name[i], 
+                      "\nFDR=0.05, N=", res[[i]][1,ncol(res[[i]])-2], 
+                      "\nUp=",res[[i]][1,ncol(res[[i]])-1],", Dn=",res[[i]][1,ncol(res[[i]])]))
+}
+
+```
+
+# Genome Feature of Peaks Enriched in Female or Male
+
+## Select peaks with p<=0.01
+
+    #!/bin/bash
+
+    set -x
+
+
+    #Create sets of foreground regions in bed format
+    for XLS in *xls ; do
+
+      UP=$XLS.up.bed
+      DN=$XLS.dn.bed
+    
+      awk ' $5<0.01 && $2>0 {print $1"\t"$1}' $XLS \
+      | cut -d '_' -f2- | sed 's/:/\t/' | sed 's/-/\t/' \
+      | bedtools sort > $UP
+
+      awk ' $5<0.01 && $2<0 {print $1"\t"$1}' $XLS \
+      | cut -d '_' -f2- | sed 's/:/\t/' | sed 's/-/\t/' \
+      | bedtools sort > $DN
+    done
+
+    #Create a set of background regions from those not changing in any comparison
+    BG=$XLS.bg.bed
+    tail -qn +2 *xls \
+    | awk '$5>0.1 {print $1}' \
+    | sort | uniq -c \
+    | cut -d '_' -f2- | tr ':-' '\t' \
+    | bedtools sort > $BG
+
+
+## Homer annotate peaks
+
+    #!/bin/bash
+    set -x
+
+    REF=/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/refgenome/Homo_sapiens.GRCh38.96.gtf
+
+    #PATH=$PATH:/group/card2/Evangelyn_Sim/NGS/app/homer/.//bin/
+
+    for BED in *.up.bed *.dn.bed ; do
+
+      OUT=$BED.homeranno.txt
+      mkdir go/$BED
+      annotatePeaks.pl $BED hg38 -gtf $REF -go go/$BED -annStats $BED.stats.txt > $OUT
+
+    done
+ 
+
+## Plot Homer peak annotation results
+
+```{r}
+
+files = list.files(path = "/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/20180726_hATACseq_MF/R/5.pks.mg.mapq30.rmBL.q30/6.pkstats/p001_MvF_20200624", pattern = ".stats.txt", full.names = T)
+mx = lapply(files, read.delim, header=T, stringsAsFactors = F)
+
+for(i in 1:length(mx)){
+  mx[[i]] = mx[[i]][c(1:5),]
+  mx[[i]]$Number.of.peaks = as.numeric(mx[[i]]$Number.of.peaks)
+  mx[[i]]$totalpeaks = sum(mx[[i]]$Number.of.peaks)
+  mx[[i]]$percentage = round(mx[[i]]$Number.of.peaks/sum(mx[[i]]$Number.of.peaks) *100, digits = 2)
+  print(PieDonut(mx[[i]],aes(Annotation,count=Number.of.peaks),r0=0.5,start=3*pi/2,labelpositionThreshold=0.1, showPieName = T, showDonutName = T,
+                 title = gsub("/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/20180726_hATACseq_MF/R/5.pks.mg.mapq30.rmBL.q30/6.pkstats/p001_MvF_20200624/edgeR_ATAC_pks_all_hum_MvF_|.xls|.bed.stats.txt", "", files[[i]])))
+}
+
+```
+
+# Transcription Factor Motif Enrichment Analysis of Peaks Enriched in Female or Male by Homer
+
+    #!/bin/bash
+
+    set -x
+
+    CWD=/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/20180726_hATACseq_MF/R/5.pks.mg.mapq30.rmBL.q30/7.homer/p001_all
+    echo $CWD
+    REF=/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/refgenome/Homo_sapiens.GRCh38.dna_sm.primary_assembly.fa
+
+    #PATH=$PATH:/home/esim/software/.//bin/
+
+    #Create sets of foreground regions in bed format
+    for XLS in *xls ; do
+
+     UP=$XLS.up.bed
+     DN=$XLS.dn.bed
+
+      awk ' $5<0.01 && $2>0 {print $1"\t"$1}' $XLS \
+      | cut -d '_' -f2- | sed 's/:/\t/' | sed 's/-/\t/' \
+      | bedtools sort > $UP
+
+      awk ' $5<0.01 && $2<0 {print $1"\t"$1}' $XLS \
+      | cut -d '_' -f2- | sed 's/:/\t/' | sed 's/-/\t/' \
+      | bedtools sort > $DN
+    done
+
+    #Create a set of background regions from those not changing in any comparison
+    BG=$XLS.bg.bed
+    tail -qn +2 *xls \
+    | awk '$5>0.1 {print $1}' \
+    | sort | uniq -c \
+    | awk '$1~/6/ {print $2}' \
+    | cut -d '_' -f2- | tr ':-' '\t' \
+    | bedtools sort > $BG
+
+    cd $CWD
+
+    #Call Homer enriched motifs with default background, then with ATAC peak BG
+    for FG in *up.bed *dn.bed ; do
+     cd $CWD
+     BED=$CWD/$FG
+
+     #find enriched motifs
+      findMotifsGenome.pl $FG $REF $FG.df.out -p 10 -keepFiles
+
+      cd $FG.df.out
+      rm -rf instances
+      mkdir instances
+      cd instances
+
+      for i in ../homerResults/motif*.motif ; do
+        BASE=`basename $i`
+        mkdir $BASE
+        findMotifsGenome.pl $BED $REF $BASE -find $i | sort -k6gr > $BASE/$BASE &
+      done
+
+     cd $CWD
+    done
+    wait
+
+
+    cd $CWD
+
+    #Call Homer enriched motifs with ATAC peak BG
+    for FG in *up.bed *dn.bed ; do
+      cd $CWD
+      BED=$CWD/$FG
+
+      #find enriched motifs
+      findMotifsGenome.pl $FG $REF $FG.out -bg $BG -p 10 -keepFiles
+
+      #find instances of enriched motifs
+      cd $FG.out
+      rm -rf instances
+      mkdir instances
+      cd instances
+
+      for i in ../homerResults/motif*.motif ; do
+        BASE=`basename $i`
+        mkdir $BASE
+        findMotifsGenome.pl $BED $REF $BASE -find $i | sort -k6gr > $BASE/$BASE &
+      done ; wait
+
+      cd $CWD
+    done
+
+
+
+
+    for MOTIF in `find . | grep instances | grep motif$` ; do
+      OUT=$MOTIF.bed
+      awk '{print $1,$2,length($3)}' $MOTIF \
+      | grep -v PositionID | cut -d '_' -f2 \
+      | tr ':' '\t' | sed 's/-/\t/' \
+      | awk '{printf "%s\t%.0f\t%.0f\n", $1,(($2+$3)/2)+$4-10,(($2+$3)/2)+$4+10}' > $OUT
+    done
+
+
+```{r}
+
+mx1 = read.delim("/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/20180726_hATACseq_MF/R/5.pks.mg.mapq30.rmBL.q30/7.homer/p001_human_MvF_20200624/edgeR_ATAC_pks_all_hum_MvF_FAdultvsMAdult.xls.up.bed.df.out/knownResults.txt", header=TRUE, sep = "\t")
+colnames(mx1) = c("Motif.Name","Consensus","P.value","Log.P.value",
+                  "q.value..Benjamini.","Peak.number","Peak.number.with.Motif", 
+                  "Background.number", "Background.number.with.Motif")
+mx1$TF = gsub("[(].*", "", mx1$Motif.Name)
+mx1$TF = gsub("/.*", "", mx1$TF)
+mx1$TF = gsub("PGR","PR", mx1$TF)
+mx1$Log.P.value = -(mx1$Log.P.value)
+mx1 = mx1[!duplicated(mx1$TF),]
+mx1 = mx1[c(1:10),]
+mx1 = mx1[order(mx1$Log.P.value),]
+mx1$TF = toupper(mx1$TF)
+mx1$TF = factor(mx1$TF, levels = mx1$TF) 
+
+s1 = ggplot(mx1, aes(TF, Log.P.value, color=Log.P.value))+
+  geom_bar(stat = "identity", fill="white", color="dodgerblue1") +
+  labs(title = "TF enriched in male")+
+  theme_minimal()+
+  coord_flip()
+
+
+mx2 = read.delim("/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/20180726_hATACseq_MF/R/5.pks.mg.mapq30.rmBL.q30/7.homer/p001_human_MvF_20200624/edgeR_ATAC_pks_all_hum_MvF_FAdultvsMAdult.xls.dn.bed.df.out/knownResults.txt", header=TRUE, sep = "\t")
+colnames(mx2) = c("Motif.Name","Consensus","P.value","Log.P.value",
+                  "q.value..Benjamini.","Peak.number","Peak.number.with.Motif", 
+                  "Background.number", "Background.number.with.Motif")
+mx2$TF = gsub("[(].*", "", mx2$Motif.Name)
+mx2$TF = gsub("/.*", "", mx2$TF)
+mx2$Log.P.value = -(mx2$Log.P.value)
+mx2 = mx2[!duplicated(mx2$TF),]
+mx2 = mx2[c(1:10),]
+mx2 = mx2[order(mx2$Log.P.value),]
+mx2$TF = toupper(mx2$TF)
+mx2$TF = factor(mx2$TF, levels = mx2$TF) 
+
+s2 = ggplot(mx2, aes(TF, Log.P.value, color=Log.P.value))+
+  geom_bar(stat = "identity", fill="white", color="deeppink1") +
+  labs(title = "TF enriched in female")+
+  theme_minimal()+
+  coord_flip()
+
+```
+
+```{r, fig.height=5, fig.width= 10}
+
+multi = arrangeGrob(s1,s2,
+                    ncol = 2, nrow = 1)
+plot = as_ggplot(multi)
+
+plot
+
+```
+
+

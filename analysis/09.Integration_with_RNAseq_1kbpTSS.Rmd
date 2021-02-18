@@ -1,0 +1,78 @@
+---
+title: "Integration of ATAC-seq with RNA-seq"
+author: "Evangelyn Sim"
+date: "2/15/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+## Introduction
+
+To investigate the correlation between ATAC-seq and RNA-seq, ATAC-seq sequencing reads were mapped to 1kbp up-/down-stream of transcription start site to identify associated genes.
+
+The result were then subjected to EdgeR differential expression analysis and then correlated with RNA-seq EdgeR outcomes.
+
+
+### Used libraries and functions
+
+* bedtools/2.27.1
+
+```{r}
+library(edgeR)
+library(limma)
+library(dplyr)
+
+library(ggplot2)
+library(moonBook)
+library(webr)
+library(waffle)
+library(extrafont)
+library(grid)
+library(gridExtra)
+library(cowplot)
+library(ggpubr)
+library(RColorBrewer)
+
+```
+
+
+### Integration of ATAC-seq and RNA-seq EdgeR rank results
+
+    #!/bin/bash
+
+    join -1 1 -2 1 <(sort -k 1b,1 edgeR_ATAC_1kbTSS_all_hum_Development_noXY.xls.rnk) <(sort -k 1b,1 edgeR_RNA_mina12a13y5y6_Development_noXY.xls.rnk) | tr ' ' '\t'  > Development_noXY.jn.rnk
+
+    join -1 1 -2 1 <(sort -k 1b,1 edgeR_ATAC_1kbTSS_all_hum_FetalvsYoung_noXY.xls.rnk) <(sort -k 1b,1 edgeR_RNA_mina12a13y5y6_FetalvsYoung_noXY.xls.rnk) | tr ' ' '\t'  > FetalvsYoung_noXY.jn.rnk
+
+    join -1 1 -2 1 <(sort -k 1b,1 edgeR_ATAC_1kbTSS_all_hum_YoungvsAdult_noXY.xls.rnk) <(sort -k 1b,1 edgeR_RNA_mina12a13y5y6_YoungvsAdult_noXY.xls.rnk) | tr ' ' '\t'  > YoungvsAdult_noXY.jn.rnk
+
+
+
+### Run Correlation and Enrichment analysis
+
+Source code for integration and enrichment analysis 
+
+    source("EnDrich.R", local = knitr::knit_global())
+
+
+Developmental data
+
+    source("EnDrichProc_Development_noXY.R", local = knitr::knit_global())
+    
+    
+Fetal vs. Young data
+
+    source("EnDrichProc_FetalvsYoung_noXY.R", local = knitr::knit_global())
+
+
+Young vs. Adult data
+
+    source("EnDrichProc_YoungvsAdult_noXY.R", local = knitr::knit_global())
+
+

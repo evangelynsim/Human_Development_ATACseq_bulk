@@ -1,0 +1,278 @@
+---
+title: "Peak Annotation and Homer Analysis"
+author: "Evangelyn Sim"
+date: "2/15/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+## Introduction
+
+Following merging samples from the same group in the Primary Analysis section, perform peak annotationa and transcription factor motif analysis using Homer.
+
+
+### Used libraries and functions
+
+* Homer
+* bedtools/2.27.1
+
+```{r}
+library(ggplot2)
+library(moonBook)
+library(webr)
+library(waffle)
+library(extrafont)
+library(grid)
+library(gridExtra)
+library(cowplot)
+library(ggpubr)
+```
+
+
+# 1. Tidy up data
+
+### Remove peaks from Chr X, Y, Mt
+
+    files = list.files(path = "/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/20180726_hATACseq_MF/seqaln/rename/rmdup/merge/combine/mapq30/group/macs/homerpkstats_noXYMT", pattern = ".bed", full.names = T)
+    mx = lapply(files, read.delim, header=F)
+
+    for(i in 1:length(mx)){
+     mx[[i]] = mx[[i]][!grepl("Y",mx[[i]]$V1),]
+     mx[[i]] = mx[[i]][!grepl("X",mx[[i]]$V1),]
+     mx[[i]] = mx[[i]][!grepl("MT",mx[[i]]$V1),]
+      #write.table(mx[[i]], file = paste0(files[[i]], ".noXYMT.bed"), col.names = F, row.names = F, sep = "\t")
+    }
+
+
+### Tidy peaks
+
+```{bash}
+
+#!/bin/bash
+
+for BED in *.noXYMT.bed ; do
+
+  cat $BED | sed 's/\"//' |  sed 's/\"//' | sed 's/\"//' | sed 's/\"//' > $BED.tidy.bed
+
+done
+
+```
+
+
+# 2. Homer Peak Annotation
+
+### Annotate peaks
+
+    #!/bin/bash
+    set -x
+
+    REF=/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/refgenome/Homo_sapiens.GRCh38.96.gtf
+
+    #PATH=$PATH:/group/card2/Evangelyn_Sim/NGS/app/homer/.//bin/
+  
+    for BED in *.tidy.bed ; do
+
+      OUT=$BED.homeranno.txt
+      mkdir go/$BED
+      annotatePeaks.pl $BED hg38 -gtf $REF -go go/$BED -annStats $BED.stats.txt > $OUT
+
+    done
+
+### Make plots
+
+```{r}
+
+files = list.files(path = "/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/20180726_hATACseq_MF/seqaln/rename/rmdup/merge/combine/mapq30/group/macs/homerpkstats_noXYMT", pattern = ".stats.txt", full.names = T)
+mx = lapply(files, read.delim, header=T)
+
+files
+
+
+for(i in 1:length(mx)){
+  mxFDR = mx[[i]][c(1:5),]
+  #write.table(mxFDR, 
+  #            file = paste0(gsub("./|.txt","",files[[i]]),".tidy.txt"),
+  #            col.names = T, row.names = F, sep = "\t")
+}
+
+
+
+#PieDonut
+files1 = list.files(path = "/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/20180726_hATACseq_MF/seqaln/rename/rmdup/merge/combine/mapq30/group/macs/homerpkstats_noXYMT", pattern = ".stats.tidy.txt", full.names = T)
+mx1 = lapply(files1, read.delim, header=T)
+
+for(j in 1:length(mx1)){
+  mx1[[j]]$totalpeaks = sum(mx1[[j]]$Number.of.peaks)
+  mx1[[j]]$percentage = round(mx1[[j]]$Number.of.peaks/sum(mx1[[j]]$Number.of.peaks) *100, digits = 2)
+  #write.table(mx1[[j]], 
+  #            file = paste0(gsub("./|.txt","",files[[j]]),".tidy.txt"),
+  #            col.names = T, row.names = F, sep = "\t")
+  
+  mx[[j]]=PieDonut(mx1[[j]],aes(Annotation,count=Number.of.peaks),r0=0.5,start=3*pi/2,labelpositionThreshold=0.1)
+}
+
+```
+
+```{r, fig.height=10, fig.width=10}
+
+multi = arrangeGrob(mx[[5]],mx[[4]],mx[[8]],mx[[1]],
+                    ncol = 2, nrow = 2)
+plot = as_ggplot(multi)
+
+plot
+
+
+
+```
+
+
+# 3. Homer Transcription Factor Binding Motif Enrichment
+
+    #!/bin/bash
+
+    set -x
+
+    CWD=/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/20180726_hATACseq_MF/seqaln/rename/rmdup/merge/combine/mapq30/group/macs/homertf_noXYMT
+    echo $CWD
+    REF=/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/refgenome/Homo_sapiens.GRCh38.dna_sm.primary_assembly.fa
+
+    cd $CWD
+
+    #Call Homer enriched motifs with default background, then with ATAC peak BG
+    for FG in *.tidy.bed ; do
+      cd $CWD
+      BED=$CWD/$FG
+
+      #find enriched motifs
+      findMotifsGenome.pl $FG $REF $FG.df.out -p 10 -keepFiles
+
+      cd $FG.df.out
+      rm -rf instances
+     mkdir instances
+      cd instances
+
+      for i in ../homerResults/motif*.motif ; do
+        BASE=`basename $i`
+        mkdir $BASE
+        findMotifsGenome.pl $BED $REF $BASE -find $i | sort -k6gr > $BASE/$BASE &
+      done
+
+      cd $CWD
+    done
+    wait
+
+
+    for MOTIF in `find . | grep instances | grep motif$` ; do
+      OUT=$MOTIF.bed
+      awk '{print $1,$2,length($3)}' $MOTIF \
+      | grep -v PositionID | cut -d '_' -f2 \
+     | tr ':' '\t' | sed 's/-/\t/' \
+     | awk '{printf "%s\t%.0f\t%.0f\n", $1,(($2+$3)/2)+$4-10,(($2+$3)/2)+$4+10}' > $OUT
+    done
+
+
+### Make plots
+
+```{r}
+
+PATH = "/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/20180726_hATACseq_MF/seqaln/rename/rmdup/merge/combine/mapq30/group/macs/homertf_noXYMT/"
+
+ipsccm = read.delim(paste0(PATH,"ipsccm.mapq30.mg.bam_macs_peaks.bed.rmBL.bed.noXYMT.bed.tidy.bed.df.out/knownResults.txt"), header = T)
+fetal = read.delim(paste0(PATH,"fetal.mapq30.mg.bam_macs_peaks.bed.rmBL.bed.noXYMT.bed.tidy.bed.df.out/knownResults.txt"), header = T)
+young = read.delim(paste0(PATH,"young.mapq30.mg.bam_macs_peaks.bed.rmBL.bed.noXYMT.bed.tidy.bed.df.out/knownResults.txt"), header = T)
+adult = read.delim(paste0(PATH,"adult.mapq30.mg.bam_macs_peaks.bed.rmBL.bed.noXYMT.bed.tidy.bed.df.out/knownResults.txt"), header = T)
+ipsccmF = read.delim(paste0(PATH,"ipsccmF.mapq30.mg.bam_macs_peaks.bed.rmBL.bed.noXYMT.bed.tidy.bed.df.out/knownResults.txt"), header = T)
+ipsccmM = read.delim(paste0(PATH,"ipsccmM.mapq30.mg.bam_macs_peaks.bed.rmBL.bed.noXYMT.bed.tidy.bed.df.out/knownResults.txt"), header = T)
+adultF = read.delim(paste0(PATH,"adultF.mapq30.mg.bam_macs_peaks.bed.rmBL.bed.noXYMT.bed.tidy.bed.df.out/knownResults.txt"), header = T)
+adultM = read.delim(paste0(PATH,"adultM.mapq30.mg.bam_macs_peaks.bed.rmBL.bed.noXYMT.bed.tidy.bed.df.out/knownResults.txt"), header = T)
+
+ipsccm$`-Log.P.value` = -(ipsccm$Log.P.value)
+fetal$`-Log.P.value` = -(fetal$Log.P.value)
+young$`-Log.P.value` = -(young$Log.P.value)
+adult$`-Log.P.value` = -(adult$Log.P.value)
+ipsccmF$`-Log.P.value` = -(ipsccmF$Log.P.value)
+ipsccmM$`-Log.P.value` = -(ipsccmM$Log.P.value)
+adultF$`-Log.P.value` = -(adultF$Log.P.value)
+adultM$`-Log.P.value` = -(adultM$Log.P.value)
+
+ipsccm = ipsccm[,c(1,10)]
+fetal = fetal[,c(1,10)]
+young = young[,c(1,10)]
+adult = adult[,c(1,10)]
+ipsccmF = ipsccmF[,c(1,10)]
+ipsccmM = ipsccmM[,c(1,10)]
+adultF = adultF[,c(1,10)]
+adultM = adultM[,c(1,10)]
+
+ipsccm$Group = "ipsccm"
+fetal$Group =  "fetal"
+young$Group =  "young"
+adult$Group =  "adult"
+ipsccmF$Group =  "ipsccmF"
+ipsccmM$Group =  "ipsccmM"
+adultF$Group =  "adultF"
+adultM$Group =  "adultM"
+
+ipsccmsl = ipsccm[c(1:50),]
+fetalsl = fetal[c(1:50),]
+youngsl = young[c(1:50),]
+adultsl = adult[c(1:50),]
+ipsccmFsl = ipsccmF[c(1:50),]
+ipsccmMsl = ipsccmM[c(1:50),]
+adultFsl = adultF[c(1:50),]
+adultMsl = adultM[c(1:50),]
+
+motifssl = rbind(ipsccmsl, fetalsl, youngsl, adultsl, ipsccmFsl, ipsccmMsl, adultFsl, adultMsl)
+motifssl = motifssl[!duplicated(motifssl$Motif.Name),]
+motifssl = motifssl[order(motifssl$Motif.Name),]
+#write.table(motifssl, file = "top50motif_from_8gps.txt", col.names = T, row.names = F, sep = "\t")
+
+mt2 = read.delim(paste0(PATH,"top50motif_from_8gps_selected_final.txt"), header = T)
+mt2
+
+
+  ipsccm_mt2_scale = ipsccm[ipsccm$Motif.Name %in% as.factor(mt2$Motif.Name),]
+  fetal_mt2_scale = fetal[fetal$Motif.Name %in% as.factor(mt2$Motif.Name),]
+  young_mt2_scale = young[young$Motif.Name %in% as.factor(mt2$Motif.Name),]
+  adult_mt2_scale = adult[adult$Motif.Name %in% as.factor(mt2$Motif.Name),]
+  
+  ipsccm_mt2_scale$scaleP = scale(ipsccm_mt2_scale$`-Log.P.value`)
+  fetal_mt2_scale$scaleP = scale(fetal_mt2_scale$`-Log.P.value`)
+  young_mt2_scale$scaleP = scale(young_mt2_scale$`-Log.P.value`)
+  adult_mt2_scale$scaleP = scale(adult_mt2_scale$`-Log.P.value`)
+  
+  mmg4_mt2_scale = rbind(ipsccm_mt2_scale, fetal_mt2_scale, young_mt2_scale, adult_mt2_scale)
+  mmg4_mt2_scale$Motif.Name = gsub("GRE[(]NR[)][,]IR3[/]RAW","GRE2(NR),IR3/RAW",mmg4_mt2_scale$Motif.Name)
+  mmg4_mt2_scale$Motifs = gsub("[(].*", "", mmg4_mt2_scale$Motif.Name)
+  mmg4_mt2_scale$Motifs = gsub("/.*", "", mmg4_mt2_scale$Motifs)
+  mmg4_mt2_scale$Motifs = toupper(mmg4_mt2_scale$Motifs)
+  mmg4_mt2_scale$Group = factor(mmg4_mt2_scale$Group, levels = c("ipsccm", "fetal","young","adult"))
+  mmg4_mt2_scale$Motifs = factor(mmg4_mt2_scale$Motifs, 
+                           levels = c("JUNB","JUN-AP1","FRA2","FRA1","FOSL2","BATF","BACH2","BACH1","ATF3","AP-1", 
+                                      "SOX2","OCT4:SOX17","OCT:OCT","OCT4","NANOG",
+                                      "KLF14","KLF10","KLF9","KLF6","KLF5","KLF4","KLF3","CTCF","BORIS",
+                                      "ELK4","ELK1",
+                                      "NF1-HALFSITE","NF1","HOXD10","HOXA9","FOXH1","FOXA2",
+                                      "ESRRB","ERRA","THRB","THRA","PR","PGR","GRE2","GRE","ARE","AR-HALFSITE",
+                                      "TEAD4", "TEAD3","TEAD1","TEAD","HAND2","FOXM1","E2F7","E2F6","E2F4","E2F3","E2F1",
+                                      "GATA6","GATA4","GATA3","GATA2","GATA1",
+                                      "TBX20","TBX5","SMAD3","NKX2.5","MYOG","MYOD","MEF2D","MEF2C","MEF2B","MEF2A"))
+  
+```
+
+```{r, fig.height=12, fig.width=4}
+  ggplot(mmg4_mt2_scale,aes_(x= ~Group , y= ~Motifs, size=~scaleP))+
+    geom_point(aes(color = `-Log.P.value`)) +
+    theme_classic()+
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+    scale_color_gradient2(midpoint = mean(mmg4_mt2_scale$`-Log.P.value`)+250, low = "yellow", mid = "orange",
+                          high = "red", space = "Lab")
+
+```
+

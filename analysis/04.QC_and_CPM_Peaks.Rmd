@@ -1,0 +1,66 @@
+---
+title: "QC filtered sequencing reads (Peaks)"
+author: "Evangelyn Sim"
+date: "2/2/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+## Introduction
+
+In the GEO submission, 4 processed files (peaks) were uploaded. 
+
+1. humanATAC_peaks_cov2_rmBL.bed.saf.pe.q30.mx.all_unfiltered.csv
+2. humanATAC_peaks_cov2_rmBL.bed.saf.pe.q30.mx.all.fix_filt.csv
+3. humanATAC_peaks_cov2_rmBL.bed.saf.pe.q30.mx.hum.fix_filt.csv
+4. humanATAC_peaks_cov2_rmBL.bed.saf.pe.q30.mx.MvsF.fix_filt.csv
+
+They have been uploaded in the /output folder and will be used below to generate different figures.
+
+
+
+### Used libraries and functions
+
+```{r}
+library(edgeR)
+library(limma)
+library(Glimma)
+library(gplots)
+
+```
+
+
+### Count per million reads
+
+```{r}
+
+rm1 <- read.csv("/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/GITHUB/Human_Development_ATACseq_bulk/output/humanATAC_peaks_cov2_rmBL.bed.saf.pe.q30.mx.all.fix_filt.csv", row.names = 1)
+
+info = read.delim("/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/GITHUB/Human_Development_ATACseq_bulk/output/ATACseq_samplesheet.txt", header = TRUE, sep = "\t")
+
+m = match(info$ID,names(rm1))
+rm2 = rm1[,m]
+rm1 = rm2
+
+mycpm = cpm(rm1)
+
+summary(mycpm)
+
+x <- DGEList(rm1)
+
+names(x)
+
+logcountsx = cpm(x, log = T)
+write.csv(logcountsx, file = "/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/GITHUB/Human_Development_ATACseq_bulk/output/logCPM_humanATAC_peaks_cov2_rmBL.bed.saf.pe.q30.mx.all.fix_filt.csv")
+
+barplot(x$samples$lib.size, names=colnames(x), las=2, col = c("turquoise1","maroon1","bisque1","purple")[info$Group], main = "Library size")
+boxplot(logcountsx, xlab="", ylab="Log2 counts per million", las=2, col = c("turquoise1","maroon1","bisque1","purple")[info$Group])
+abline(h=median(logcountsx), col="navy")
+
+```

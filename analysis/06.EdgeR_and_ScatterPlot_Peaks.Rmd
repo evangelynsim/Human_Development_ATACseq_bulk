@@ -1,0 +1,386 @@
+---
+title: "EdgeR & Scatter Plot (Peaks)"
+author: "Evangelyn Sim"
+date: "2/15/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+## Introduction
+
+In the GEO submission, 4 processed files (peaks) were uploaded. 
+
+1. humanATAC_peaks_cov2_rmBL.bed.saf.pe.q30.mx.all_unfiltered.csv
+2. humanATAC_peaks_cov2_rmBL.bed.saf.pe.q30.mx.all.fix_filt.csv
+3. humanATAC_peaks_cov2_rmBL.bed.saf.pe.q30.mx.hum.fix_filt.csv
+4. humanATAC_peaks_cov2_rmBL.bed.saf.pe.q30.mx.MvsF.fix_filt.csv
+
+
+They have been uploaded in the /output folder and will be used below to generate different figures.
+
+
+### Used libraries and functions
+
+```{r}
+library(edgeR)
+library(limma)
+library(dplyr)
+
+```
+
+
+### Read files 
+```{r}
+
+PRIOR = 20
+FDR = 0.05
+
+rm1 <- read.csv("/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/GITHUB/Human_Development_ATACseq_bulk/output/humanATAC_peaks_cov2_rmBL.bed.saf.pe.q30.mx.hum.fix_filt.csv", row.names = 1)
+
+info = read.delim("/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/GITHUB/Human_Development_ATACseq_bulk/output/ATACseq_samplesheet.txt", header = TRUE, sep = "\t", stringsAsFactors = F)
+info = info[c(1:20),]
+info$Dev = c(3,1,2)[factor(info$Group)]
+
+m = match(info$ID,names(rm1))
+rm2 = rm1[,m]
+
+rm1 = rm2
+
+sampleinfo = info
+levels(factor(sampleinfo$Group))
+table(colnames(rm2)==sampleinfo$ID)
+
+matrix = rm2
+pheno = info
+
+```
+
+# Differential Gene Expresison Analysis Comparing 2 Groups
+
+```{r}
+
+attach(pheno)
+design = model.matrix(as.formula("~ 0  + Group + Sex + Batch"))
+detach(pheno)
+design
+
+D = DGEList(counts=matrix)
+D = calcNormFactors(D)
+D = estimateGLMCommonDisp(D, design)
+D = estimateGLMTagwiseDisp(D, design, prior.df = PRIOR)
+fit = glmFit(D, design, prior.count = PRIOR)
+
+Contrast = makeContrasts(FetalvsYoung = GroupYoung - GroupFetal,
+                         YoungvsAdult = GroupAdult - GroupYoung,
+                         FetalvsAdult = GroupAdult - GroupFetal,
+                         levels=design)
+
+res = list()
+contrast.name = colnames(Contrast)
+
+for(i in 1:length(contrast.name)){
+  lrt = glmLRT(fit, contrast = Contrast[,i])   
+  
+  results = lrt$table
+  disp = lrt$dispersion
+  fitted.vals = lrt$fitted.values
+  coefficients = lrt$coefficients
+  
+  results$adj.p.value = p.adjust(p = results$PValue, method = "fdr" )
+  table(row.names(results) == row.names(fitted.vals))
+  
+  Name = row.names(results)
+  res0 = cbind(Name, results, disp, fitted.vals, coefficients)
+  res[[i]] = res0[order(res0$adj.p.value),]
+  
+  # write.table(res[[i]], file= paste0("../output/edgeR/edgeR_ATAC_all_", contrast.name[i] ,".xls"), quote=F, sep="\t", col.names = T, row.names = F)
+  
+  
+  res[[i]]= mutate(res[[i]], cs= ifelse(res[[i]]$adj.p.value <= 0.05 & res[[i]]$logFC <= 0, "blue",
+                               ifelse(res[[i]]$adj.p.value <= 0.05 & res[[i]]$logFC >= 0, "red", "grey")))
+  
+  mxFDR = res[[i]][res[[i]]$adj.p.value <= FDR,]
+  mxFDR_Up = mxFDR[mxFDR$logFC>0,]
+  mxFDR_Dn = mxFDR[mxFDR$logFC<0,]
+  
+  res[[i]]= mutate(res[[i]], FDR= nrow(mxFDR))
+  res[[i]]= mutate(res[[i]], FDRup= nrow(mxFDR_Up))
+  res[[i]]= mutate(res[[i]], FDRdn= nrow(mxFDR_Dn))
+
+
+}
+
+
+for(i in 1:length(contrast.name)){
+  print(contrast.name[i])
+  print(table(res[[i]]$adj.p.value < 0.05))
+}
+
+
+```
+
+```{r, fig.height=4, fig.width= 10}
+
+par(mfrow=c(1,3))
+
+for(i in 1:length(contrast.name)){
+
+  plot(res[[i]]$logCPM, res[[i]]$logFC, pch=20, cex=1, col=res[[i]]$cs, 
+        xlab = "logCPM", ylab = "logFC",
+        main = paste0(contrast.name[i], 
+                      "\nFDR=0.05, N=", res[[i]][1,ncol(res[[i]])-2], 
+                      "\nUp=",res[[i]][1,ncol(res[[i]])-1],", Dn=",res[[i]][1,ncol(res[[i]])]))
+}
+
+```
+
+# Differential Gene Expresison Analysis Comparing Fetal to Young to Adult Group
+
+```{r}
+
+
+########################################################################################################Dev
+
+attach(pheno)
+design_dev = model.matrix(as.formula("~ 0  + Dev + Sex + Batch"))
+detach(pheno)
+design_dev
+
+D_dev = DGEList(counts=matrix)
+D_dev = calcNormFactors(D_dev)
+D_dev = estimateGLMCommonDisp(D_dev, design_dev)
+D_dev = estimateGLMTagwiseDisp(D_dev, design_dev, prior.df = PRIOR)
+fit_dev = glmFit(D_dev, design_dev, prior.count = PRIOR)
+
+Contrast_dev = makeContrasts(Development = Dev,
+                             levels=design_dev)
+
+res_dev = list()
+contrast.name_dev = colnames(Contrast_dev)
+
+for(i in 1:length(contrast.name_dev)){
+  lrt_dev = glmLRT(fit_dev, contrast = Contrast_dev[,i])   
+  results_dev = lrt_dev$table
+  disp_dev = lrt_dev$dispersion
+  fitted.vals_dev = lrt_dev$fitted.values
+  coefficients_dev = lrt_dev$coefficients
+  
+  results_dev$adj.p.value = p.adjust(p = results_dev$PValue, method = "fdr" )
+  table(row.names(results_dev) == row.names(fitted.vals_dev))
+  
+  Name = row.names(results_dev)
+  res0_dev = cbind(Name, results_dev, disp_dev, fitted.vals_dev, coefficients_dev)
+  res_dev[[i]] = res0_dev[order(res0_dev$adj.p.value),]
+  #write.table(res_dev[[i]], file= paste0("../output/edgeR/edgeR_ATAC_all_", contrast.name_dev[i] ,".xls"), quote=F, sep="\t", col.names = T, row.names = F)
+  
+  res_dev[[i]]= mutate(res_dev[[i]], cs= ifelse(res_dev[[i]]$adj.p.value <= 0.05 & res_dev[[i]]$logFC <= 0, "blue",
+                               ifelse(res_dev[[i]]$adj.p.value <= 0.05 & res_dev[[i]]$logFC >= 0, "red", "grey")))
+  
+  mxFDR = res_dev[[i]][res_dev[[i]]$adj.p.value <= FDR,]
+  mxFDR_Up = mxFDR[mxFDR$logFC>0,]
+  mxFDR_Dn = mxFDR[mxFDR$logFC<0,]
+  
+  res_dev[[i]]= mutate(res_dev[[i]], FDR= nrow(mxFDR))
+  res_dev[[i]]= mutate(res_dev[[i]], FDRup= nrow(mxFDR_Up))
+  res_dev[[i]]= mutate(res_dev[[i]], FDRdn= nrow(mxFDR_Dn))
+
+
+}
+
+
+for(i in 1:length(contrast.name_dev)){
+  print(contrast.name_dev[i])
+  print(table(res_dev[[i]]$adj.p.value < 0.05))
+}
+
+
+```
+
+```{r, fig.height=4, fig.width= 3}
+
+par(mfrow=c(1,1))
+
+for(i in 1:length(contrast.name_dev)){
+
+  plot(res_dev[[i]]$logCPM, res_dev[[i]]$logFC, pch=20, cex=1, col=res_dev[[i]]$cs, 
+        xlab = "logCPM", ylab = "logFC",
+        main = paste0(contrast.name_dev[i], 
+                      "\nFDR=0.05, N=", res_dev[[i]][1,ncol(res_dev[[i]])-2], 
+                      "\nUp=",res_dev[[i]][1,ncol(res_dev[[i]])-1],", Dn=",res_dev[[i]][1,ncol(res_dev[[i]])]))
+}
+
+```
+
+
+
+
+# Remove Chr X & Y genes
+
+```{r}
+
+rm3=rm2
+rm3$Chr= gsub(".*_|:.*$", "", rownames(rm3))
+rm3 = rm3[!grepl("Y",rm3$Chr),]
+rm3 = rm3[!grepl("X",rm3$Chr),]
+rm3 = rm3[,c(1:ncol(rm3)-1)]
+
+matrix = rm3
+
+```
+
+# Differential Gene Expresison Analysis Comparing 2 Groups (removed Chr X & Y genes)
+
+```{r}
+
+attach(pheno)
+design = model.matrix(as.formula("~ 0  + Group + Sex + Batch"))
+detach(pheno)
+design
+
+D = DGEList(counts=matrix)
+D = calcNormFactors(D)
+D = estimateGLMCommonDisp(D, design)
+D = estimateGLMTagwiseDisp(D, design, prior.df = PRIOR)
+fit = glmFit(D, design, prior.count = PRIOR)
+
+Contrast = makeContrasts(FetalvsYoung = GroupYoung - GroupFetal,
+                         YoungvsAdult = GroupAdult - GroupYoung,
+                         FetalvsAdult = GroupAdult - GroupFetal,
+                         levels=design)
+
+res = list()
+contrast.name = colnames(Contrast)
+
+for(i in 1:length(contrast.name)){
+  lrt = glmLRT(fit, contrast = Contrast[,i])   
+  
+  results = lrt$table
+  disp = lrt$dispersion
+  fitted.vals = lrt$fitted.values
+  coefficients = lrt$coefficients
+  
+  results$adj.p.value = p.adjust(p = results$PValue, method = "fdr" )
+  table(row.names(results) == row.names(fitted.vals))
+  
+  Name = row.names(results)
+  res0 = cbind(Name, results, disp, fitted.vals, coefficients)
+  res[[i]] = res0[order(res0$adj.p.value),]
+  #write.table(res[[i]], file= paste0("../output/edgeR/edgeR_ATAC_all_", contrast.name[i] ,"_noXY.xls"), quote=F, sep="\t", col.names = T, row.names = F)
+  
+  res[[i]]= mutate(res[[i]], cs= ifelse(res[[i]]$adj.p.value <= 0.05 & res[[i]]$logFC <= 0, "blue",
+                               ifelse(res[[i]]$adj.p.value <= 0.05 & res[[i]]$logFC >= 0, "red", "grey")))
+  
+  mxFDR = res[[i]][res[[i]]$adj.p.value <= FDR,]
+  mxFDR_Up = mxFDR[mxFDR$logFC>0,]
+  mxFDR_Dn = mxFDR[mxFDR$logFC<0,]
+  
+  res[[i]]= mutate(res[[i]], FDR= nrow(mxFDR))
+  res[[i]]= mutate(res[[i]], FDRup= nrow(mxFDR_Up))
+  res[[i]]= mutate(res[[i]], FDRdn= nrow(mxFDR_Dn))
+
+
+}
+
+
+for(i in 1:length(contrast.name)){
+  print(contrast.name[i])
+  print(table(res[[i]]$adj.p.value < 0.05))
+}
+
+
+```
+
+```{r, fig.height=4, fig.width= 10}
+
+par(mfrow=c(1,3))
+
+for(i in 1:length(contrast.name)){
+
+  plot(res[[i]]$logCPM, res[[i]]$logFC, pch=20, cex=1, col=res[[i]]$cs, 
+        xlab = "logCPM", ylab = "logFC",
+        main = paste0(contrast.name[i], 
+                      "\nFDR=0.05, N=", res[[i]][1,ncol(res[[i]])-2], 
+                      "\nUp=",res[[i]][1,ncol(res[[i]])-1],", Dn=",res[[i]][1,ncol(res[[i]])]))
+}
+
+```
+
+# Differential Gene Expresison Analysis Comparing Fetal to Young to Adult Group (removed Chr X & Y genes)
+
+```{r}
+attach(pheno)
+design_dev = model.matrix(as.formula("~ 0  + Dev + Sex + Batch"))
+detach(pheno)
+design_dev
+
+D_dev = DGEList(counts=matrix)
+D_dev = calcNormFactors(D_dev)
+D_dev = estimateGLMCommonDisp(D_dev, design_dev)
+D_dev = estimateGLMTagwiseDisp(D_dev, design_dev, prior.df = PRIOR)
+fit_dev = glmFit(D_dev, design_dev, prior.count = PRIOR)
+
+Contrast_dev = makeContrasts(Development = Dev,
+                             levels=design_dev)
+
+res_dev = list()
+contrast.name_dev = colnames(Contrast_dev)
+
+for(i in 1:length(contrast.name_dev)){
+  lrt_dev = glmLRT(fit_dev, contrast = Contrast_dev[,i])   
+  results_dev = lrt_dev$table
+  disp_dev = lrt_dev$dispersion
+  fitted.vals_dev = lrt_dev$fitted.values
+  coefficients_dev = lrt_dev$coefficients
+  
+  results_dev$adj.p.value = p.adjust(p = results_dev$PValue, method = "fdr" )
+  table(row.names(results_dev) == row.names(fitted.vals_dev))
+  
+  Name = row.names(results_dev)
+  res0_dev = cbind(Name, results_dev, disp_dev, fitted.vals_dev, coefficients_dev)
+  res_dev[[i]] = res0_dev[order(res0_dev$adj.p.value),]
+  #write.table(res_dev[[i]], file= paste0("../output/edgeR/edgeR_ATAC_all_", contrast.name_dev[i] ,"_noXY.xls"), quote=F, sep="\t", col.names = T, row.names = F)
+  
+  
+  res_dev[[i]]= mutate(res_dev[[i]], cs= ifelse(res_dev[[i]]$adj.p.value <= 0.05 & res_dev[[i]]$logFC <= 0, "blue",
+                               ifelse(res_dev[[i]]$adj.p.value <= 0.05 & res_dev[[i]]$logFC >= 0, "red", "grey")))
+  
+  mxFDR = res_dev[[i]][res_dev[[i]]$adj.p.value <= FDR,]
+  mxFDR_Up = mxFDR[mxFDR$logFC>0,]
+  mxFDR_Dn = mxFDR[mxFDR$logFC<0,]
+  
+  res_dev[[i]]= mutate(res_dev[[i]], FDR= nrow(mxFDR))
+  res_dev[[i]]= mutate(res_dev[[i]], FDRup= nrow(mxFDR_Up))
+  res_dev[[i]]= mutate(res_dev[[i]], FDRdn= nrow(mxFDR_Dn))
+
+
+}
+
+
+for(i in 1:length(contrast.name_dev)){
+  print(contrast.name_dev[i])
+  print(table(res_dev[[i]]$adj.p.value < 0.05))
+}
+
+
+```
+
+```{r, fig.height=4, fig.width= 3}
+
+par(mfrow=c(1,1))
+
+for(i in 1:length(contrast.name_dev)){
+
+  plot(res_dev[[i]]$logCPM, res_dev[[i]]$logFC, pch=20, cex=1, col=res_dev[[i]]$cs, 
+        xlab = "logCPM", ylab = "logFC",
+        main = paste0(contrast.name_dev[i], 
+                      "\nFDR=0.05, N=", res_dev[[i]][1,ncol(res_dev[[i]])-2], 
+                      "\nUp=",res_dev[[i]][1,ncol(res_dev[[i]])-1],", Dn=",res_dev[[i]][1,ncol(res_dev[[i]])]))
+}
+
+```

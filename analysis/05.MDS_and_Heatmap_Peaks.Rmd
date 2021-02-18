@@ -1,0 +1,171 @@
+---
+title: "MDS plot & Heatmap (Peaks)"
+author: "Evangelyn Sim"
+date: "2/15/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+## Introduction
+
+In the GEO submission, 4 processed files (peaks) were uploaded. 
+
+1. humanATAC_peaks_cov2_rmBL.bed.saf.pe.q30.mx.all_unfiltered.csv
+2. humanATAC_peaks_cov2_rmBL.bed.saf.pe.q30.mx.all.fix_filt.csv
+3. humanATAC_peaks_cov2_rmBL.bed.saf.pe.q30.mx.hum.fix_filt.csv
+4. humanATAC_peaks_cov2_rmBL.bed.saf.pe.q30.mx.MvsF.fix_filt.csv
+
+
+They have been uploaded in the /output folder and will be used below to generate different figures.
+
+
+
+### Used libraries and functions
+
+```{r}
+library(edgeR)
+library(limma)
+library(Glimma)
+library(gplots)
+
+library(ComplexHeatmap)
+library(circlize)
+library(RColorBrewer)
+library(mclust)
+
+```
+
+
+### Read files 
+```{r}
+
+rm1 <- read.csv("/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/GITHUB/Human_Development_ATACseq_bulk/output/humanATAC_peaks_cov2_rmBL.bed.saf.pe.q30.mx.all.fix_filt.csv", row.names = 1)
+
+info = read.delim("/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/GITHUB/Human_Development_ATACseq_bulk/output/ATACseq_samplesheet.txt", header = TRUE, sep = "\t")
+
+
+m = match(info$ID,names(rm1))
+rm2 = rm1[,m]
+
+rm1 = rm2
+
+sampleinfo = info
+levels(factor(sampleinfo$Group))
+sampleinfo$colour = c("violetred4","darkgoldenrod2","bisque2","tomato")[factor(sampleinfo$Group)]
+table(colnames(rm2)==sampleinfo$ID)
+
+y <- DGEList(rm2)
+
+```
+
+# Make plot
+
+```{r, fig.height=4,fig.width=10}
+
+par(mfrow=c(1,3))
+#par(mar=c(5,1,5,1))
+
+plotMDS(y, pch=c(0,1,5,2)[factor(sampleinfo$Group)], col=sampleinfo$colour, cex = 2)
+legend("right", legend = c("iPSCCM","Fetal","Young","Adult"), pch=c(5,1,2,0), col = c("bisque2","darkgoldenrod2","tomato","violetred4"), cex=1)
+
+plotMDS(y, pch=c(0,15,1,16,5,18,2,17)[factor(sampleinfo$BinSex)], col=sampleinfo$colour, cex = 2)
+legend("right", legend = c("iPSCCM","Fetal","Young","Adult"), pch=c(5,1,2,0), col = c("bisque2","darkgoldenrod2","tomato","violetred4"), cex=1)
+legend("bottomright", legend = c("F","M"), pch=c(1,16), col = c("grey"), cex=1)
+
+plotMDS(y, cex = 0.8)
+
+
+```
+
+
+# Remove Chr X & Y genes
+
+```{r}
+
+rm3=rm2
+rm3$Chr= gsub(".*_|:.*$", "", rownames(rm3))
+rm3 = rm3[!grepl("Y",rm3$Chr),]
+rm3 = rm3[!grepl("X",rm3$Chr),]
+rm3 = rm3[,c(1:ncol(rm3)-1)]
+
+z <- DGEList(rm3)
+
+```
+
+# Make MDS plot (removed Chr X & Y genes)
+
+```{r, fig.height=4,fig.width=10}
+
+par(mfrow=c(1,3))
+
+plotMDS(z, pch=c(0,1,5,2)[factor(sampleinfo$Group)], col=sampleinfo$colour, cex = 2)
+legend("right", legend = c("iPSCCM","Fetal","Young","Adult"), pch=c(5,1,2,0), col = c("bisque2","darkgoldenrod2","tomato","violetred4"), cex=1)
+
+plotMDS(z, pch=c(0,15,1,16,5,18,2,17)[factor(sampleinfo$BinSex)], col=sampleinfo$colour, cex = 2)
+legend("right", legend = c("iPSCCM","Fetal","Young","Adult"), pch=c(5,1,2,0), col = c("bisque2","darkgoldenrod2","tomato","violetred4"), cex=1)
+legend("bottomright", legend = c("F","M"), pch=c(1,16), col = c("grey"), cex=1)
+
+plotMDS(z, cex = 0.8)
+
+
+```
+
+
+# Make Heatmap (removed Chr X & Y genes)
+
+```{r}
+
+mycpm = cpm(rm3, log = T)
+
+corr1 = cor(mycpm, method = "pearson")
+
+matrix = as.matrix(corr1)
+
+set.seed(20)
+
+mypalette <- brewer.pal(11,"RdYlBu")
+morecols <- colorRampPalette(mypalette) #colorramppa make colour gradient
+
+ann <- data.frame(sampleinfo[,c(1,3)])
+colnames(ann) <- c("Group","Sex")
+colours <- list("Group"=c("Fetal"="darkgoldenrod2","Young"="tomato","Adult"="violetred4", "hiPSCCM"="bisque2" ),
+                "Sex"=c("F"="deeppink1","M"="dodgerblue1"))
+colAnn <- HeatmapAnnotation(df=ann, which="col", col=colours, annotation_width=unit(c(1, 4), "cm"), gap=unit(1, "mm"))
+colAnn1 <- HeatmapAnnotation(df=ann, which="row", col=colours, annotation_width=unit(c(1, 4), "cm"), gap=unit(1, "mm"))
+
+```
+
+```{r, fig.width=12, fig.height=10}
+
+ht_list = 
+  Heatmap(matrix, name = "Correlation",
+          row_title = "",
+          row_title_gp = gpar(fontsize = 10),
+          col = rev(morecols(50)),
+          width = unit(15, "cm"),
+          height = unit(15, "cm"),
+          top_annotation = colAnn,
+          left_annotation = colAnn1,
+          cluster_rows =T,
+          show_row_names = T,
+          row_names_side = "left",
+          row_names_gp = gpar(fontsize = 15),
+          cluster_columns =T,
+          column_names_side = "top",
+          column_names_gp = gpar(fontsize = 15),  
+          column_title = "", 
+          column_title_gp = gpar(fontsize = 15))
+ 
+set.seed(20)
+
+clus = draw(ht_list)
+
+
+```
+
