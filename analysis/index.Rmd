@@ -8,4 +8,55 @@ editor_options:
   chunk_output_type: console
 ---
 
-Welcome to my research website.
+# Human Developmental Bulk ATAC-seq 
+
+This site contains the results of the bulk nuclei RNA-seq analyses presented in 
+"Sex-specific control of human heart maturation by the progesterone receptor", 
+which has been accepted for publication in *Circulation* (1 February 2021). 
+Follow the links below to view the different aspects of the analysis.
+
+# Abstract
+
+**Background:** Despite in-depth knowledge of the molecular mechanisms controlling embryonic heart development, little is known about the signals governing postnatal maturation of the human heart. 
+
+**Methods and Results:** Here, we analyze the transcriptome and chromatin accessibility landscape of the developing human heart from early gestation to adulthood and uncover striking sex differences in the transcriptional programs underlying cardiac maturation. Our data identify the progesterone receptor as a key mediator of sex-dependent transcriptional programs during cardiomyocyte maturation. Functional validation studies in human cardiac organoids and mice demonstrate the progesterone receptor drives sex-specific metabolic programs and maturation of cardiac contractile properties. 
+
+**Conclusions:** These data provide a blueprint for understanding human heart maturation in both sexes and reveal an important role for the progesterone receptor in human heart development.
+
+# Authors
+
+Choon Boon Sim, Belinda Phipson, Mark Ziemann, Haloom Rafehi, 
+Richard J. Mills, Kevin I. Watt, Kwaku D. Abu-Bonsrah, Ravi K.R. Kalathur, Holly K. Voges, 
+Doan T. Dinh, Menno ter Huurne, Celine J. Vivien, Antony Kaspi, Harikrishnan Kaipanaickal, 
+Alejandro Hidalgo, Leanne M.D. Delbridge, Rebecca L. Robker, Paul Gregorevic, Cristobal G. dos Remedios, Sean Lal, 
+Adam T. Piers, Igor E. Konstantinov, David A. Elliott, Assam El-Osta, Alicia Oshlack, 
+James E. Hudson, Enzo R. Porrello.
+
+# Analysis
+
+The data analysis consists of a number of steps that are detailed in the scripts 
+listed below.
+
+
+## Primary analysis of sequencing reads
+
+* [Generate reference genome for nuclei RNA-seq](01.Generate_reference_genome.html)
+* [Trimming and mapping of sequencing reads](02.Primary_Analysis.html)
+
+## (Group) Peak annotation and transcription factor prediction
+
+* [Annotation and transcription factor prediction](03.Peak_Annotation_and_Homer_Analysis.html)
+
+## (Individual sample) Peak annotation and transcription factor prediction
+
+* [QC and CPM](04.QC_and_CPM_Peaks.html)
+* [MDS and Heatmap](05.MDS_and_Heatmap_Peaks.html)
+
+## Differential expression analysis
+
+* [Differential analysis of individual sample (peaks)](06.EdgeR_and_ScatterPlot_Peaks.html)
+* [Differential analysis of adult female versus male (peaks)](07.EdgeR_and_ScatterPlot_Peaks_FvsM.html)
+* [Differential analysis of individual sample (1kbp+/-TSS)](08.EdgeR_and_ScatterPlot_1kb.html)
+
+## Integration of ATAC-seq and RNA-seq
+* [Integration analysis](09.Integration_with_RNAseq_1kbpTSS.html)
