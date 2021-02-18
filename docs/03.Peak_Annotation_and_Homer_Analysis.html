@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Evangelyn Sim" />
+
+
+<title>Peak Annotation and Homer Analysis</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/anchor-sections-1.0/anchor-sections.css" rel="stylesheet" />
+<script src="site_libs/anchor-sections-1.0/anchor-sections.js"></script>
+<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/master/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Human_Development_ATACseq_bulk</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/evangelynsim/Human_Development_ATACseq_bulk">
+    <span class="fa fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Peak Annotation and Homer Analysis</h1>
+<h4 class="author">Evangelyn Sim</h4>
+<h4 class="date">2/15/2021</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span> workflowr <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2021-02-19
+</p>
+<p>
+<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 7 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 0
+</p>
+<p>
+<strong>Knit directory:</strong> <code>Human_Development_ATACseq_bulk/</code> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="This is the local directory in which the code in this file was executed."> </span>
+</p>
+<p>
+This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis was created with <a
+  href="https://github.com/jdblischak/workflowr">workflowr</a> (version 1.6.2). The <em>Checks</em> tab describes the reproducibility checks that were applied when the results were created. The <em>Past versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguptodate" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the global environment can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it’s best to always run the code in an empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20210216code"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Seed:</strong> <code>set.seed(20210216)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20210216code" class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20210216)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Session information:</strong> recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be confident that you successfully produced the results during this run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomevangelynsimHumanDevelopmentATACseqbulktree294d8302e6f1302302285058851a249e73804868targetblank294d830a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/evangelynsim/Human_Development_ATACseq_bulk/tree/294d8302e6f1302302285058851a249e73804868" target="_blank">294d830</a> </a>
+</p>
+</div>
+<div id="strongRepositoryversionstrongahrefhttpsgithubcomevangelynsimHumanDevelopmentATACseqbulktree294d8302e6f1302302285058851a249e73804868targetblank294d830a" class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version <a href="https://github.com/evangelynsim/Human_Development_ATACseq_bulk/tree/294d8302e6f1302302285058851a249e73804868" target="_blank">294d830</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .Rhistory
+    Ignored:    .Rproj.user/
+
+Untracked files:
+    Untracked:  *.noXYMT.bed.tidy.bed
+    Untracked:  *xls.bg.bed
+    Untracked:  *xls.dn.bed
+    Untracked:  *xls.up.bed
+    Untracked:  Development_noXY.jn.rnk
+    Untracked:  FetalvsYoung_noXY.jn.rnk
+    Untracked:  Homo_sapiens.GRCh38.96.fulllength.saf
+    Untracked:  YoungvsAdult_noXY.jn.rnk
+    Untracked:  analysis/*.dn.bed.homeranno.txt
+    Untracked:  analysis/*.up.bed.homeranno.txt
+    Untracked:  analysis/00.WorkFlowR_setting.R
+    Untracked:  code/EnDrich.R
+    Untracked:  code/EnDrichProc_Development_noXY.R
+    Untracked:  code/EnDrichProc_FetalvsYoung_noXY.R
+    Untracked:  code/EnDrichProc_YoungvsAdult_noXY.R
+    Untracked:  header.sam
+    Untracked:  humanATAC*bed.saf
+    Untracked:  humanATAC*bed.saf.pe.q30.mx
+    Untracked:  humanATAC*bed.saf.pe.q30.mx.all
+    Untracked:  humanATAC*bed.saf.pe.q30.mx.all.fix
+    Untracked:  humanATAC*bed.saf.pe.q30.mx.chr
+    Untracked:  humanATAC*bed.saf.pe.q30.mx.fix
+    Untracked:  humanATAC*bed.saf.pe.q30.mx.hum.fix
+    Untracked:  output/20190801_ATAC_samplesheet.txt
+    Untracked:  output/ATACseq_samplesheet.txt
+    Untracked:  output/atac_hum_tss_pe_mapk30_q30.mx.all_unfiltered.csv
+    Untracked:  output/atac_hum_tss_pe_mapk30_q30.mx.chr
+    Untracked:  output/atac_hum_tss_pe_mapk30_q30.mx.hum.fix_filt.csv
+    Untracked:  output/humanATAC_peaks_cov2_rmBL.bed.saf.pe.q30.mx.MvsF.fix_filt.csv
+    Untracked:  output/humanATAC_peaks_cov2_rmBL.bed.saf.pe.q30.mx.all.fix_filt.csv
+    Untracked:  output/humanATAC_peaks_cov2_rmBL.bed.saf.pe.q30.mx.all_unfiltered.csv
+    Untracked:  output/humanATAC_peaks_cov2_rmBL.bed.saf.pe.q30.mx.hum.fix_filt.csv
+    Untracked:  output/logCPM_humanATAC_peaks_cov2_rmBL.bed.saf.pe.q30.mx.all.fix_filt.csv
+
+Unstaged changes:
+    Modified:   analysis/about.Rmd
+    Modified:   analysis/index.Rmd
+    Modified:   analysis/license.Rmd
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+
+<p>
+These are the previous versions of the repository in which changes were made to the R Markdown (<code>analysis/03.Peak_Annotation_and_Homer_Analysis.Rmd</code>) and HTML (<code>docs/03.Peak_Annotation_and_Homer_Analysis.html</code>) files. If you’ve configured a remote Git repository (see <code>?wflow_git_remote</code>), click on the hyperlinks in the table below to view the files as they were in that past version.
+</p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/evangelynsim/Human_Development_ATACseq_bulk/blob/294d8302e6f1302302285058851a249e73804868/analysis/03.Peak_Annotation_and_Homer_Analysis.Rmd" target="_blank">294d830</a>
+</td>
+<td>
+evangelynsim
+</td>
+<td>
+2021-02-19
+</td>
+<td>
+wflow_publish(c(“analysis/01.Generate_reference_genome.Rmd”,
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>Following merging samples from the same group in the Primary Analysis section, perform peak annotationa and transcription factor motif analysis using Homer.</p>
+<div id="used-libraries-and-functions" class="section level3">
+<h3>Used libraries and functions</h3>
+<ul>
+<li>Homer</li>
+<li>bedtools/2.27.1</li>
+</ul>
+<pre class="r"><code>library(ggplot2)
+library(moonBook)
+library(webr)
+library(waffle)
+library(extrafont)</code></pre>
+<pre><code>Registering fonts with R</code></pre>
+<pre class="r"><code>library(grid)
+library(gridExtra)
+library(cowplot)</code></pre>
+<pre><code>
+********************************************************</code></pre>
+<pre><code>Note: As of version 1.0.0, cowplot does not change the</code></pre>
+<pre><code>  default ggplot2 theme anymore. To recover the previous</code></pre>
+<pre><code>  behavior, execute:
+  theme_set(theme_cowplot())</code></pre>
+<pre><code>********************************************************</code></pre>
+<pre class="r"><code>library(ggpubr)</code></pre>
+<pre><code>
+Attaching package: &#39;ggpubr&#39;</code></pre>
+<pre><code>The following object is masked from &#39;package:cowplot&#39;:
+
+    get_legend</code></pre>
+</div>
+</div>
+<div id="tidy-up-data" class="section level1">
+<h1>1. Tidy up data</h1>
+<div id="remove-peaks-from-chr-x-y-mt" class="section level3">
+<h3>Remove peaks from Chr X, Y, Mt</h3>
+<pre><code>files = list.files(path = &quot;/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/20180726_hATACseq_MF/seqaln/rename/rmdup/merge/combine/mapq30/group/macs/homerpkstats_noXYMT&quot;, pattern = &quot;.bed&quot;, full.names = T)
+mx = lapply(files, read.delim, header=F)
+
+for(i in 1:length(mx)){
+ mx[[i]] = mx[[i]][!grepl(&quot;Y&quot;,mx[[i]]$V1),]
+ mx[[i]] = mx[[i]][!grepl(&quot;X&quot;,mx[[i]]$V1),]
+ mx[[i]] = mx[[i]][!grepl(&quot;MT&quot;,mx[[i]]$V1),]
+  #write.table(mx[[i]], file = paste0(files[[i]], &quot;.noXYMT.bed&quot;), col.names = F, row.names = F, sep = &quot;\t&quot;)
+}</code></pre>
+</div>
+<div id="tidy-peaks" class="section level3">
+<h3>Tidy peaks</h3>
+<pre class="bash"><code>
+#!/bin/bash
+
+for BED in *.noXYMT.bed ; do
+
+  cat $BED | sed &#39;s/\&quot;//&#39; |  sed &#39;s/\&quot;//&#39; | sed &#39;s/\&quot;//&#39; | sed &#39;s/\&quot;//&#39; &gt; $BED.tidy.bed
+
+done
+</code></pre>
+<pre><code>cat: *.noXYMT.bed: No such file or directory</code></pre>
+</div>
+</div>
+<div id="homer-peak-annotation" class="section level1">
+<h1>2. Homer Peak Annotation</h1>
+<div id="annotate-peaks" class="section level3">
+<h3>Annotate peaks</h3>
+<pre><code>#!/bin/bash
+set -x
+
+REF=/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/refgenome/Homo_sapiens.GRCh38.96.gtf
+
+#PATH=$PATH:/group/card2/Evangelyn_Sim/NGS/app/homer/.//bin/
+
+for BED in *.tidy.bed ; do
+
+  OUT=$BED.homeranno.txt
+  mkdir go/$BED
+  annotatePeaks.pl $BED hg38 -gtf $REF -go go/$BED -annStats $BED.stats.txt &gt; $OUT
+
+done</code></pre>
+</div>
+<div id="make-plots" class="section level3">
+<h3>Make plots</h3>
+<pre class="r"><code>files = list.files(path = &quot;/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/20180726_hATACseq_MF/seqaln/rename/rmdup/merge/combine/mapq30/group/macs/homerpkstats_noXYMT&quot;, pattern = &quot;.stats.txt&quot;, full.names = T)
+mx = lapply(files, read.delim, header=T)
+
+files</code></pre>
+<pre><code>[1] &quot;/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/20180726_hATACseq_MF/seqaln/rename/rmdup/merge/combine/mapq30/group/macs/homerpkstats_noXYMT/adult.mapq30.mg.bam_macs_peaks.bed.rmBL.bed.noXYMT.bed.tidy.bed.stats.txt&quot;  
+[2] &quot;/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/20180726_hATACseq_MF/seqaln/rename/rmdup/merge/combine/mapq30/group/macs/homerpkstats_noXYMT/adultF.mapq30.mg.bam_macs_peaks.bed.rmBL.bed.noXYMT.bed.tidy.bed.stats.txt&quot; 
+[3] &quot;/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/20180726_hATACseq_MF/seqaln/rename/rmdup/merge/combine/mapq30/group/macs/homerpkstats_noXYMT/adultM.mapq30.mg.bam_macs_peaks.bed.rmBL.bed.noXYMT.bed.tidy.bed.stats.txt&quot; 
+[4] &quot;/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/20180726_hATACseq_MF/seqaln/rename/rmdup/merge/combine/mapq30/group/macs/homerpkstats_noXYMT/fetal.mapq30.mg.bam_macs_peaks.bed.rmBL.bed.noXYMT.bed.tidy.bed.stats.txt&quot;  
+[5] &quot;/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/20180726_hATACseq_MF/seqaln/rename/rmdup/merge/combine/mapq30/group/macs/homerpkstats_noXYMT/ipsccm.mapq30.mg.bam_macs_peaks.bed.rmBL.bed.noXYMT.bed.tidy.bed.stats.txt&quot; 
+[6] &quot;/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/20180726_hATACseq_MF/seqaln/rename/rmdup/merge/combine/mapq30/group/macs/homerpkstats_noXYMT/ipsccmF.mapq30.mg.bam_macs_peaks.bed.rmBL.bed.noXYMT.bed.tidy.bed.stats.txt&quot;
+[7] &quot;/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/20180726_hATACseq_MF/seqaln/rename/rmdup/merge/combine/mapq30/group/macs/homerpkstats_noXYMT/ipsccmM.mapq30.mg.bam_macs_peaks.bed.rmBL.bed.noXYMT.bed.tidy.bed.stats.txt&quot;
+[8] &quot;/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/20180726_hATACseq_MF/seqaln/rename/rmdup/merge/combine/mapq30/group/macs/homerpkstats_noXYMT/young.mapq30.mg.bam_macs_peaks.bed.rmBL.bed.noXYMT.bed.tidy.bed.stats.txt&quot;  </code></pre>
+<pre class="r"><code>for(i in 1:length(mx)){
+  mxFDR = mx[[i]][c(1:5),]
+  #write.table(mxFDR, 
+  #            file = paste0(gsub(&quot;./|.txt&quot;,&quot;&quot;,files[[i]]),&quot;.tidy.txt&quot;),
+  #            col.names = T, row.names = F, sep = &quot;\t&quot;)
+}
+
+
+
+#PieDonut
+files1 = list.files(path = &quot;/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/20180726_hATACseq_MF/seqaln/rename/rmdup/merge/combine/mapq30/group/macs/homerpkstats_noXYMT&quot;, pattern = &quot;.stats.tidy.txt&quot;, full.names = T)
+mx1 = lapply(files1, read.delim, header=T)
+
+for(j in 1:length(mx1)){
+  mx1[[j]]$totalpeaks = sum(mx1[[j]]$Number.of.peaks)
+  mx1[[j]]$percentage = round(mx1[[j]]$Number.of.peaks/sum(mx1[[j]]$Number.of.peaks) *100, digits = 2)
+  #write.table(mx1[[j]], 
+  #            file = paste0(gsub(&quot;./|.txt&quot;,&quot;&quot;,files[[j]]),&quot;.tidy.txt&quot;),
+  #            col.names = T, row.names = F, sep = &quot;\t&quot;)
+  
+  mx[[j]]=PieDonut(mx1[[j]],aes(Annotation,count=Number.of.peaks),r0=0.5,start=3*pi/2,labelpositionThreshold=0.1)
+}</code></pre>
+<pre class="r"><code>multi = arrangeGrob(mx[[5]],mx[[4]],mx[[8]],mx[[1]],
+                    ncol = 2, nrow = 2)
+plot = as_ggplot(multi)
+
+plot</code></pre>
+<p><img src="figure/03.Peak_Annotation_and_Homer_Analysis.Rmd/unnamed-chunk-4-1.png" width="960" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="homer-transcription-factor-binding-motif-enrichment" class="section level1">
+<h1>3. Homer Transcription Factor Binding Motif Enrichment</h1>
+<pre><code>#!/bin/bash
+
+set -x
+
+CWD=/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/20180726_hATACseq_MF/seqaln/rename/rmdup/merge/combine/mapq30/group/macs/homertf_noXYMT
+echo $CWD
+REF=/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/refgenome/Homo_sapiens.GRCh38.dna_sm.primary_assembly.fa
+
+cd $CWD
+
+#Call Homer enriched motifs with default background, then with ATAC peak BG
+for FG in *.tidy.bed ; do
+  cd $CWD
+  BED=$CWD/$FG
+
+  #find enriched motifs
+  findMotifsGenome.pl $FG $REF $FG.df.out -p 10 -keepFiles
+
+  cd $FG.df.out
+  rm -rf instances
+ mkdir instances
+  cd instances
+
+  for i in ../homerResults/motif*.motif ; do
+    BASE=`basename $i`
+    mkdir $BASE
+    findMotifsGenome.pl $BED $REF $BASE -find $i | sort -k6gr &gt; $BASE/$BASE &amp;
+  done
+
+  cd $CWD
+done
+wait
+
+
+for MOTIF in `find . | grep instances | grep motif$` ; do
+  OUT=$MOTIF.bed
+  awk &#39;{print $1,$2,length($3)}&#39; $MOTIF \
+  | grep -v PositionID | cut -d &#39;_&#39; -f2 \
+ | tr &#39;:&#39; &#39;\t&#39; | sed &#39;s/-/\t/&#39; \
+ | awk &#39;{printf &quot;%s\t%.0f\t%.0f\n&quot;, $1,(($2+$3)/2)+$4-10,(($2+$3)/2)+$4+10}&#39; &gt; $OUT
+done</code></pre>
+<div id="make-plots-1" class="section level3">
+<h3>Make plots</h3>
+<pre class="r"><code>PATH = &quot;/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/20180726_hATACseq_MF/seqaln/rename/rmdup/merge/combine/mapq30/group/macs/homertf_noXYMT/&quot;
+
+ipsccm = read.delim(paste0(PATH,&quot;ipsccm.mapq30.mg.bam_macs_peaks.bed.rmBL.bed.noXYMT.bed.tidy.bed.df.out/knownResults.txt&quot;), header = T)
+fetal = read.delim(paste0(PATH,&quot;fetal.mapq30.mg.bam_macs_peaks.bed.rmBL.bed.noXYMT.bed.tidy.bed.df.out/knownResults.txt&quot;), header = T)
+young = read.delim(paste0(PATH,&quot;young.mapq30.mg.bam_macs_peaks.bed.rmBL.bed.noXYMT.bed.tidy.bed.df.out/knownResults.txt&quot;), header = T)
+adult = read.delim(paste0(PATH,&quot;adult.mapq30.mg.bam_macs_peaks.bed.rmBL.bed.noXYMT.bed.tidy.bed.df.out/knownResults.txt&quot;), header = T)
+ipsccmF = read.delim(paste0(PATH,&quot;ipsccmF.mapq30.mg.bam_macs_peaks.bed.rmBL.bed.noXYMT.bed.tidy.bed.df.out/knownResults.txt&quot;), header = T)
+ipsccmM = read.delim(paste0(PATH,&quot;ipsccmM.mapq30.mg.bam_macs_peaks.bed.rmBL.bed.noXYMT.bed.tidy.bed.df.out/knownResults.txt&quot;), header = T)
+adultF = read.delim(paste0(PATH,&quot;adultF.mapq30.mg.bam_macs_peaks.bed.rmBL.bed.noXYMT.bed.tidy.bed.df.out/knownResults.txt&quot;), header = T)
+adultM = read.delim(paste0(PATH,&quot;adultM.mapq30.mg.bam_macs_peaks.bed.rmBL.bed.noXYMT.bed.tidy.bed.df.out/knownResults.txt&quot;), header = T)
+
+ipsccm$`-Log.P.value` = -(ipsccm$Log.P.value)
+fetal$`-Log.P.value` = -(fetal$Log.P.value)
+young$`-Log.P.value` = -(young$Log.P.value)
+adult$`-Log.P.value` = -(adult$Log.P.value)
+ipsccmF$`-Log.P.value` = -(ipsccmF$Log.P.value)
+ipsccmM$`-Log.P.value` = -(ipsccmM$Log.P.value)
+adultF$`-Log.P.value` = -(adultF$Log.P.value)
+adultM$`-Log.P.value` = -(adultM$Log.P.value)
+
+ipsccm = ipsccm[,c(1,10)]
+fetal = fetal[,c(1,10)]
+young = young[,c(1,10)]
+adult = adult[,c(1,10)]
+ipsccmF = ipsccmF[,c(1,10)]
+ipsccmM = ipsccmM[,c(1,10)]
+adultF = adultF[,c(1,10)]
+adultM = adultM[,c(1,10)]
+
+ipsccm$Group = &quot;ipsccm&quot;
+fetal$Group =  &quot;fetal&quot;
+young$Group =  &quot;young&quot;
+adult$Group =  &quot;adult&quot;
+ipsccmF$Group =  &quot;ipsccmF&quot;
+ipsccmM$Group =  &quot;ipsccmM&quot;
+adultF$Group =  &quot;adultF&quot;
+adultM$Group =  &quot;adultM&quot;
+
+ipsccmsl = ipsccm[c(1:50),]
+fetalsl = fetal[c(1:50),]
+youngsl = young[c(1:50),]
+adultsl = adult[c(1:50),]
+ipsccmFsl = ipsccmF[c(1:50),]
+ipsccmMsl = ipsccmM[c(1:50),]
+adultFsl = adultF[c(1:50),]
+adultMsl = adultM[c(1:50),]
+
+motifssl = rbind(ipsccmsl, fetalsl, youngsl, adultsl, ipsccmFsl, ipsccmMsl, adultFsl, adultMsl)
+motifssl = motifssl[!duplicated(motifssl$Motif.Name),]
+motifssl = motifssl[order(motifssl$Motif.Name),]
+#write.table(motifssl, file = &quot;top50motif_from_8gps.txt&quot;, col.names = T, row.names = F, sep = &quot;\t&quot;)
+
+mt2 = read.delim(paste0(PATH,&quot;top50motif_from_8gps_selected_final.txt&quot;), header = T)
+mt2</code></pre>
+<pre><code>                                                         Motif.Name X.NAME.
+1                  AP-1(bZIP)/ThioMac-PU.1-ChIP-Seq(GSE21512)/Homer 453.000
+2                 AR-halfsite(NR)/LNCaP-AR-ChIP-Seq(GSE27824)/Homer 103.600
+3                         ARE(NR)/LNCAP-AR-ChIP-Seq(GSE27824)/Homer  91.810
+4                      Atf3(bZIP)/GBM-ATF3-ChIP-Seq(GSE33912)/Homer 530.700
+5                   Bach1(bZIP)/K562-Bach1-ChIP-Seq(GSE31477)/Homer  81.940
+6                 Bach2(bZIP)/OCILy7-Bach2-ChIP-Seq(GSE44420)/Homer 306.300
+7                     BATF(bZIP)/Th17-BATF-ChIP-Seq(GSE39756)/Homer 502.200
+8                     BORIS(Zf)/K562-CTCFL-ChIP-Seq(GSE32465)/Homer 142.300
+9                  CTCF(Zf)/CD4+-CTCF-ChIP-Seq(Barski_et_al.)/Homer 386.600
+10                     E2F1(E2F)/Hela-E2F1-ChIP-Seq(GSE22478)/Homer  28.530
+11                      E2F3(E2F)/MEF-E2F3-ChIP-Seq(GSE71376)/Homer  52.060
+12                     E2F4(E2F)/K562-E2F4-ChIP-Seq(GSE31477)/Homer  77.640
+13                     E2F6(E2F)/Hela-E2F6-ChIP-Seq(GSE31477)/Homer  54.770
+14                     E2F7(E2F)/Hela-E2F7-ChIP-Seq(GSE32673)/Homer  38.250
+15                     Elk1(ETS)/Hela-Elk1-ChIP-Seq(GSE31477)/Homer 117.900
+16                     Elk4(ETS)/Hela-Elk4-ChIP-Seq(GSE31477)/Homer 133.000
+17                 Fosl2(bZIP)/3T3L1-Fosl2-ChIP-Seq(GSE56872)/Homer 524.200
+18             Foxa2(Forkhead)/Liver-Foxa2-ChIP-Seq(GSE25694)/Homer  65.800
+19              Foxh1(Forkhead)/hESC-FOXH1-ChIP-Seq(GSE29422)/Homer  15.750
+20                   Fra1(bZIP)/BT549-Fra1-ChIP-Seq(GSE46166)/Homer 598.400
+21                Fra2(bZIP)/Striatum-Fra2-ChIP-Seq(GSE43429)/Homer 575.900
+22                    Gata1(Zf)/K562-GATA1-ChIP-Seq(GSE18829)/Homer 103.500
+23                    Gata2(Zf)/K562-GATA2-ChIP-Seq(GSE18829)/Homer  88.290
+24                   GATA3(Zf)/iTreg-Gata3-ChIP-Seq(GSE20898)/Homer 125.400
+25                   Gata4(Zf)/Heart-Gata4-ChIP-Seq(GSE35151)/Homer 115.500
+26                   Gata6(Zf)/HUG1N-GATA6-ChIP-Seq(GSE51936)/Homer 135.200
+27                     GRE(NR),IR3/A549-GR-ChIP-Seq(GSE32465)/Homer 102.500
+28             GRE(NR),IR3/RAW264.7-GRE-ChIP-Seq(Unpublished)/Homer  84.770
+29   Hoxa9(Homeobox)/ChickenMSG-Hoxa9.Flag-ChIP-Seq(GSE86088)/Homer 102.800
+30 Hoxd10(Homeobox)/ChickenMSG-Hoxd10.Flag-ChIP-Seq(GSE86088)/Homer  78.260
+31                 Jun-AP1(bZIP)/K562-cJun-ChIP-Seq(GSE31477)/Homer 489.300
+32          JunB(bZIP)/DendriticCells-Junb-ChIP-Seq(GSE36099)/Homer 546.800
+33              KLF10(Zf)/HEK293-KLF10.GFP-ChIP-Seq(GSE58341)/Homer  95.830
+34              KLF14(Zf)/HEK293-KLF14.GFP-ChIP-Seq(GSE58341)/Homer 247.300
+35                       KLF3(Zf)/MEF-Klf3-ChIP-Seq(GSE44748)/Homer 450.600
+36                       Klf4(Zf)/mES-Klf4-ChIP-Seq(GSE11431)/Homer 100.600
+37                      KLF5(Zf)/LoVo-KLF5-ChIP-Seq(GSE49402)/Homer 285.000
+38                      KLF6(Zf)/PDAC-KLF6-ChIP-Seq(GSE64557)/Homer 281.000
+39                       Klf9(Zf)/GBM-Klf9-ChIP-Seq(GSE62211)/Homer 296.600
+40                Mef2d(MADS)/Retina-Mef2d-ChIP-Seq(GSE61391)/Homer 164.800
+41                 MyoD(bHLH)/Myotube-MyoD-ChIP-Seq(GSE21614)/Homer 136.000
+42                   MyoG(bHLH)/C2C12-MyoG-ChIP-Seq(GSE36024)/Homer  90.970
+43          NF1-halfsite(CTF)/LNCaP-NF1-ChIP-Seq(Unpublished)/Homer 245.300
+44                   NF1(CTF)/LNCAP-NF1-ChIP-Seq(Unpublished)/Homer 168.800
+45          OCT:OCT(POU,Homeobox)/NPC-OCT6-ChIP-Seq(GSE43916)/Homer  95.090
+46   Oct4:Sox17(POU,Homeobox,HMG)/F9-Sox17-ChIP-Seq(GSE44553)/Homer   7.823
+47                          PR(NR)/T47D-PR-ChIP-Seq(GSE31130)/Homer  72.210
+48                    Smad3(MAD)/NPC-Smad3-ChIP-Seq(GSE36673)/Homer 117.600
+49                Tbx20(T-box)/Heart-Tbx20-ChIP-Seq(GSE29636)/Homer  89.720
+50                   TEAD1(TEAD)/HepG2-TEAD1-ChIP-Seq(Encode)/Homer 126.500
+51                    TEAD3(TEA)/HepG2-TEAD3-ChIP-Seq(Encode)/Homer  48.250
+52             TEAD4(TEA)/Tropoblast-Tead4-ChIP-Seq(GSE37350)/Homer  78.750
+53             Tbx5(T-box)/HL1-Tbx5.biotin-ChIP-Seq(GSE21529)/Homer   0.000
+54                     Erra(NR)/HepG2-Erra-ChIP-Seq(GSE31477)/Homer   0.000
+55                    THRb(NR)/Liver-NR1A2-ChIP-Seq(GSE52613)/Homer   0.000
+56                     THRa(NR)/C17.2-THRa-ChIP-Seq(GSE38347)/Homer   0.000
+57            Mef2a(MADS)/HL1-Mef2a.biotin-ChIP-Seq(GSE21529)/Homer   0.000
+58              FOXM1(Forkhead)/MCF7-FOXM1-ChIP-Seq(GSE72977)/Homer   0.000
+59             Mef2b(MADS)/HEK293-Mef2b.V5-ChIP-Seq(GSE67450)/Homer   0.000
+60               Mef2c(MADS)/GM12878-Mef2c-ChIP-Seq(GSE32465)/Homer   0.000
+61      Nkx2.5(Homeobox)/HL1-Nkx2.5.biotin-ChIP-Seq(GSE21529)/Homer   0.000
+62             Oct4(POU,Homeobox)/mES-Oct4-ChIP-Seq(GSE11431)/Homer   0.000
+63               Nanog(Homeobox)/mES-Nanog-ChIP-Seq(GSE11724)/Homer   0.000
+64                      Sox2(HMG)/mES-Sox2-ChIP-Seq(GSE11431)/Homer   0.000
+65                     Esrrb(NR)/mES-Esrrb-ChIP-Seq(GSE11431)/Homer   0.000
+66                 PGR(NR)/EndoStromal-PGR-ChIP-Seq(GSE69539)/Homer   0.000
+67            TEAD(TEA)/Fibroblast-PU.1-ChIP-Seq(Unpublished)/Homer   0.000
+68              Hand2(bHLH)/Mesoderm-Hand2-ChIP-Seq(GSE61475)/Homer   0.000
+     Group
+1    young
+2    young
+3   adultF
+4    young
+5    young
+6    young
+7    young
+8    fetal
+9    fetal
+10  ipsccm
+11  ipsccm
+12  ipsccm
+13  ipsccm
+14  ipsccm
+15  ipsccm
+16  ipsccm
+17   young
+18   fetal
+19 ipsccmF
+20   young
+21   young
+22   fetal
+23   fetal
+24   young
+25   fetal
+26   fetal
+27   adult
+28   adult
+29   fetal
+30   fetal
+31   young
+32   young
+33  ipsccm
+34  ipsccm
+35  ipsccm
+36  ipsccm
+37  ipsccm
+38  ipsccm
+39  ipsccm
+40   fetal
+41   fetal
+42   fetal
+43   fetal
+44   fetal
+45 ipsccmF
+46 ipsccmF
+47   young
+48   fetal
+49   fetal
+50   fetal
+51  ipsccm
+52   fetal
+53   added
+54   added
+55   added
+56   added
+57   added
+58   added
+59   added
+60   added
+61   added
+62   added
+63   added
+64   added
+65   added
+66   added
+67   added
+68   added</code></pre>
+<pre class="r"><code>  ipsccm_mt2_scale = ipsccm[ipsccm$Motif.Name %in% as.factor(mt2$Motif.Name),]
+  fetal_mt2_scale = fetal[fetal$Motif.Name %in% as.factor(mt2$Motif.Name),]
+  young_mt2_scale = young[young$Motif.Name %in% as.factor(mt2$Motif.Name),]
+  adult_mt2_scale = adult[adult$Motif.Name %in% as.factor(mt2$Motif.Name),]
+  
+  ipsccm_mt2_scale$scaleP = scale(ipsccm_mt2_scale$`-Log.P.value`)
+  fetal_mt2_scale$scaleP = scale(fetal_mt2_scale$`-Log.P.value`)
+  young_mt2_scale$scaleP = scale(young_mt2_scale$`-Log.P.value`)
+  adult_mt2_scale$scaleP = scale(adult_mt2_scale$`-Log.P.value`)
+  
+  mmg4_mt2_scale = rbind(ipsccm_mt2_scale, fetal_mt2_scale, young_mt2_scale, adult_mt2_scale)
+  mmg4_mt2_scale$Motif.Name = gsub(&quot;GRE[(]NR[)][,]IR3[/]RAW&quot;,&quot;GRE2(NR),IR3/RAW&quot;,mmg4_mt2_scale$Motif.Name)
+  mmg4_mt2_scale$Motifs = gsub(&quot;[(].*&quot;, &quot;&quot;, mmg4_mt2_scale$Motif.Name)
+  mmg4_mt2_scale$Motifs = gsub(&quot;/.*&quot;, &quot;&quot;, mmg4_mt2_scale$Motifs)
+  mmg4_mt2_scale$Motifs = toupper(mmg4_mt2_scale$Motifs)
+  mmg4_mt2_scale$Group = factor(mmg4_mt2_scale$Group, levels = c(&quot;ipsccm&quot;, &quot;fetal&quot;,&quot;young&quot;,&quot;adult&quot;))
+  mmg4_mt2_scale$Motifs = factor(mmg4_mt2_scale$Motifs, 
+                           levels = c(&quot;JUNB&quot;,&quot;JUN-AP1&quot;,&quot;FRA2&quot;,&quot;FRA1&quot;,&quot;FOSL2&quot;,&quot;BATF&quot;,&quot;BACH2&quot;,&quot;BACH1&quot;,&quot;ATF3&quot;,&quot;AP-1&quot;, 
+                                      &quot;SOX2&quot;,&quot;OCT4:SOX17&quot;,&quot;OCT:OCT&quot;,&quot;OCT4&quot;,&quot;NANOG&quot;,
+                                      &quot;KLF14&quot;,&quot;KLF10&quot;,&quot;KLF9&quot;,&quot;KLF6&quot;,&quot;KLF5&quot;,&quot;KLF4&quot;,&quot;KLF3&quot;,&quot;CTCF&quot;,&quot;BORIS&quot;,
+                                      &quot;ELK4&quot;,&quot;ELK1&quot;,
+                                      &quot;NF1-HALFSITE&quot;,&quot;NF1&quot;,&quot;HOXD10&quot;,&quot;HOXA9&quot;,&quot;FOXH1&quot;,&quot;FOXA2&quot;,
+                                      &quot;ESRRB&quot;,&quot;ERRA&quot;,&quot;THRB&quot;,&quot;THRA&quot;,&quot;PR&quot;,&quot;PGR&quot;,&quot;GRE2&quot;,&quot;GRE&quot;,&quot;ARE&quot;,&quot;AR-HALFSITE&quot;,
+                                      &quot;TEAD4&quot;, &quot;TEAD3&quot;,&quot;TEAD1&quot;,&quot;TEAD&quot;,&quot;HAND2&quot;,&quot;FOXM1&quot;,&quot;E2F7&quot;,&quot;E2F6&quot;,&quot;E2F4&quot;,&quot;E2F3&quot;,&quot;E2F1&quot;,
+                                      &quot;GATA6&quot;,&quot;GATA4&quot;,&quot;GATA3&quot;,&quot;GATA2&quot;,&quot;GATA1&quot;,
+                                      &quot;TBX20&quot;,&quot;TBX5&quot;,&quot;SMAD3&quot;,&quot;NKX2.5&quot;,&quot;MYOG&quot;,&quot;MYOD&quot;,&quot;MEF2D&quot;,&quot;MEF2C&quot;,&quot;MEF2B&quot;,&quot;MEF2A&quot;))</code></pre>
+<pre class="r"><code>  ggplot(mmg4_mt2_scale,aes_(x= ~Group , y= ~Motifs, size=~scaleP))+
+    geom_point(aes(color = `-Log.P.value`)) +
+    theme_classic()+
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+    scale_color_gradient2(midpoint = mean(mmg4_mt2_scale$`-Log.P.value`)+250, low = &quot;yellow&quot;, mid = &quot;orange&quot;,
+                          high = &quot;red&quot;, space = &quot;Lab&quot;)</code></pre>
+<p><img src="figure/03.Peak_Annotation_and_Homer_Analysis.Rmd/unnamed-chunk-6-1.png" width="384" style="display: block; margin: auto;" /></p>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 3.6.1 (2019-07-05)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: CentOS Linux 7 (Core)
+
+Matrix products: default
+BLAS:   /hpc/software/installed/R/3.6.1/lib64/R/lib/libRblas.so
+LAPACK: /hpc/software/installed/R/3.6.1/lib64/R/lib/libRlapack.so
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+attached base packages:
+[1] grid      stats     graphics  grDevices utils     datasets  methods  
+[8] base     
+
+other attached packages:
+[1] ggpubr_0.4.0    cowplot_1.0.0   gridExtra_2.3   extrafont_0.17 
+[5] waffle_0.7.0    webr_0.1.5      moonBook_0.2.3  ggplot2_3.3.2  
+[9] workflowr_1.6.2
+
+loaded via a namespace (and not attached):
+  [1] nlme_3.1-150       fs_1.5.0           RColorBrewer_1.1-2
+  [4] insight_0.9.0      rprojroot_1.3-2    tools_3.6.1       
+  [7] backports_1.1.10   R6_2.5.0           DT_0.14           
+ [10] sjlabelled_1.1.6   colorspace_1.4-1   withr_2.3.0       
+ [13] tidyselect_1.1.0   mnormt_1.5-6       extrafontdb_1.0   
+ [16] curl_4.3           compiler_3.6.1     git2r_0.27.1      
+ [19] flextable_0.5.10   xml2_1.3.2         officer_0.3.12    
+ [22] labeling_0.4.2     scales_1.1.1       lmtest_0.9-38     
+ [25] psych_1.9.12.31    readr_1.4.0        systemfonts_0.2.3 
+ [28] stringr_1.4.0      digest_0.6.27      foreign_0.8-71    
+ [31] editData_0.1.2     rmarkdown_2.5      rio_0.5.16        
+ [34] base64enc_0.1-3    pkgconfig_2.0.3    htmltools_0.5.0   
+ [37] fastmap_1.0.1      rvg_0.2.5          htmlwidgets_1.5.2 
+ [40] rlang_0.4.7        readxl_1.3.1       rstudioapi_0.11   
+ [43] shiny_1.5.0        farver_2.0.3       generics_0.1.0    
+ [46] zoo_1.8-8          jsonlite_1.7.0     dplyr_1.0.2       
+ [49] zip_2.1.1          car_3.0-10         magrittr_1.5      
+ [52] Rcpp_1.0.5         munsell_0.5.0      abind_1.4-5       
+ [55] gdtools_0.2.2      lifecycle_0.2.0    stringi_1.5.3     
+ [58] whisker_0.4        yaml_2.2.1         carData_3.0-4     
+ [61] MASS_7.3-51.6      parallel_3.6.1     promises_1.1.1    
+ [64] sjmisc_2.8.5       forcats_0.5.0      crayon_1.3.4      
+ [67] miniUI_0.1.1.1     lattice_0.20-41    haven_2.3.1       
+ [70] hms_0.5.3          knitr_1.30         pillar_1.4.6      
+ [73] uuid_0.1-4         ggsignif_0.6.0     glue_1.4.2        
+ [76] evaluate_0.14      data.table_1.13.2  vcd_1.4-8         
+ [79] vctrs_0.3.2        tweenr_1.0.1       httpuv_1.5.4      
+ [82] Rttf2pt1_1.3.8     cellranger_1.1.0   gtable_0.3.0      
+ [85] purrr_0.3.4        polyclip_1.10-0    tidyr_1.1.2       
+ [88] xfun_0.18          ggforce_0.3.2      openxlsx_4.2.3    
+ [91] mime_0.9           xtable_1.8-4       broom_0.7.0       
+ [94] rstatix_0.6.0      later_1.1.0.1      tibble_3.0.3      
+ [97] shinyWidgets_0.5.4 rrtable_0.2.1      ellipsis_0.3.1    
+[100] ztable_0.2.0       devEMF_3.8        </code></pre>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+http://docs.mathjax.org/en/latest/configuration.html.  This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

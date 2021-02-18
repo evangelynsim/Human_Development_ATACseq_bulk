@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Evangelyn Sim" />
+
+
+<title>EdgeR, Scatter Plot and Homer Analysis of Female versus Male (Peaks)</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/anchor-sections-1.0/anchor-sections.css" rel="stylesheet" />
+<script src="site_libs/anchor-sections-1.0/anchor-sections.js"></script>
+<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/master/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Human_Development_ATACseq_bulk</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/evangelynsim/Human_Development_ATACseq_bulk">
+    <span class="fa fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">EdgeR, Scatter Plot and Homer Analysis of Female versus Male (Peaks)</h1>
+<h4 class="author">Evangelyn Sim</h4>
+<h4 class="date">2/15/2021</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span> workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2021-02-19
+</p>
+<p>
+<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 1
+</p>
+<p>
+<strong>Knit directory:</strong> <code>Human_Development_ATACseq_bulk/</code> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="This is the local directory in which the code in this file was executed."> </span>
+</p>
+<p>
+This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis was created with <a
+  href="https://github.com/jdblischak/workflowr">workflowr</a> (version 1.6.2). The <em>Checks</em> tab describes the reproducibility checks that were applied when the results were created. The <em>Past versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div class="panel-group" id="workflowr-checks">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguptodate" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the global environment can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it’s best to always run the code in an empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20210216code"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Seed:</strong> <code>set.seed(20210216)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20210216code" class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20210216)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Session information:</strong> recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be confident that you successfully produced the results during this run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongabsolute"> <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> <strong>File paths:</strong> absolute </a>
+</p>
+</div>
+<div id="strongFilepathsstrongabsolute" class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Using absolute paths to the files within your workflowr project makes it difficult for you and others to run your code on a different machine. Change the absolute path(s) below to the suggested relative path(s) to make your code more reproducible.
+</p>
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th style="text-align:left;">
+absolute
+</th>
+<th style="text-align:left;">
+relative
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/GITHUB/Human_Development_ATACseq_bulk/output/humanATAC_peaks_cov2_rmBL.bed.saf.pe.q30.mx.hum.fix_filt.csv
+</td>
+<td style="text-align:left;">
+output/humanATAC_peaks_cov2_rmBL.bed.saf.pe.q30.mx.hum.fix_filt.csv
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/GITHUB/Human_Development_ATACseq_bulk/output/ATACseq_samplesheet.txt
+</td>
+<td style="text-align:left;">
+output/ATACseq_samplesheet.txt
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomevangelynsimHumanDevelopmentATACseqbulktree294d8302e6f1302302285058851a249e73804868targetblank294d830a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/evangelynsim/Human_Development_ATACseq_bulk/tree/294d8302e6f1302302285058851a249e73804868" target="_blank">294d830</a> </a>
+</p>
+</div>
+<div id="strongRepositoryversionstrongahrefhttpsgithubcomevangelynsimHumanDevelopmentATACseqbulktree294d8302e6f1302302285058851a249e73804868targetblank294d830a" class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version <a href="https://github.com/evangelynsim/Human_Development_ATACseq_bulk/tree/294d8302e6f1302302285058851a249e73804868" target="_blank">294d830</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .Rhistory
+    Ignored:    .Rproj.user/
+
+Untracked files:
+    Untracked:  *.noXYMT.bed.tidy.bed
+    Untracked:  *xls.bg.bed
+    Untracked:  *xls.dn.bed
+    Untracked:  *xls.up.bed
+    Untracked:  Development_noXY.jn.rnk
+    Untracked:  FetalvsYoung_noXY.jn.rnk
+    Untracked:  Homo_sapiens.GRCh38.96.fulllength.saf
+    Untracked:  YoungvsAdult_noXY.jn.rnk
+    Untracked:  analysis/*.dn.bed.homeranno.txt
+    Untracked:  analysis/*.up.bed.homeranno.txt
+    Untracked:  analysis/00.WorkFlowR_setting.R
+    Untracked:  code/EnDrich.R
+    Untracked:  code/EnDrichProc_Development_noXY.R
+    Untracked:  code/EnDrichProc_FetalvsYoung_noXY.R
+    Untracked:  code/EnDrichProc_YoungvsAdult_noXY.R
+    Untracked:  header.sam
+    Untracked:  humanATAC*bed.saf
+    Untracked:  humanATAC*bed.saf.pe.q30.mx
+    Untracked:  humanATAC*bed.saf.pe.q30.mx.all
+    Untracked:  humanATAC*bed.saf.pe.q30.mx.all.fix
+    Untracked:  humanATAC*bed.saf.pe.q30.mx.chr
+    Untracked:  humanATAC*bed.saf.pe.q30.mx.fix
+    Untracked:  humanATAC*bed.saf.pe.q30.mx.hum.fix
+    Untracked:  output/20190801_ATAC_samplesheet.txt
+    Untracked:  output/ATACseq_samplesheet.txt
+    Untracked:  output/atac_hum_tss_pe_mapk30_q30.mx.all_unfiltered.csv
+    Untracked:  output/atac_hum_tss_pe_mapk30_q30.mx.chr
+    Untracked:  output/atac_hum_tss_pe_mapk30_q30.mx.hum.fix_filt.csv
+    Untracked:  output/humanATAC_peaks_cov2_rmBL.bed.saf.pe.q30.mx.MvsF.fix_filt.csv
+    Untracked:  output/humanATAC_peaks_cov2_rmBL.bed.saf.pe.q30.mx.all.fix_filt.csv
+    Untracked:  output/humanATAC_peaks_cov2_rmBL.bed.saf.pe.q30.mx.all_unfiltered.csv
+    Untracked:  output/humanATAC_peaks_cov2_rmBL.bed.saf.pe.q30.mx.hum.fix_filt.csv
+    Untracked:  output/logCPM_humanATAC_peaks_cov2_rmBL.bed.saf.pe.q30.mx.all.fix_filt.csv
+
+Unstaged changes:
+    Modified:   analysis/about.Rmd
+    Modified:   analysis/index.Rmd
+    Modified:   analysis/license.Rmd
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+
+<p>
+These are the previous versions of the repository in which changes were made to the R Markdown (<code>analysis/07.EdgeR_and_ScatterPlot_Peaks_FvsM.Rmd</code>) and HTML (<code>docs/07.EdgeR_and_ScatterPlot_Peaks_FvsM.html</code>) files. If you’ve configured a remote Git repository (see <code>?wflow_git_remote</code>), click on the hyperlinks in the table below to view the files as they were in that past version.
+</p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/evangelynsim/Human_Development_ATACseq_bulk/blob/294d8302e6f1302302285058851a249e73804868/analysis/07.EdgeR_and_ScatterPlot_Peaks_FvsM.Rmd" target="_blank">294d830</a>
+</td>
+<td>
+evangelynsim
+</td>
+<td>
+2021-02-19
+</td>
+<td>
+wflow_publish(c(“analysis/01.Generate_reference_genome.Rmd”,
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>In the GEO submission, 4 processed files (peaks) were uploaded.</p>
+<ol style="list-style-type: decimal">
+<li>humanATAC_peaks_cov2_rmBL.bed.saf.pe.q30.mx.all_unfiltered.csv</li>
+<li>humanATAC_peaks_cov2_rmBL.bed.saf.pe.q30.mx.all.fix_filt.csv</li>
+<li>humanATAC_peaks_cov2_rmBL.bed.saf.pe.q30.mx.hum.fix_filt.csv</li>
+<li>humanATAC_peaks_cov2_rmBL.bed.saf.pe.q30.mx.MvsF.fix_filt.csv</li>
+</ol>
+<p>They have been uploaded in the /output folder and will be used below to generate different figures.</p>
+<div id="used-libraries-and-functions" class="section level3">
+<h3>Used libraries and functions</h3>
+<ul>
+<li>bedtools/2.27.1</li>
+<li>Homer</li>
+</ul>
+<pre class="r"><code>library(edgeR)</code></pre>
+<pre><code>Loading required package: limma</code></pre>
+<pre class="r"><code>library(limma)
+library(dplyr)</code></pre>
+<pre><code>
+Attaching package: &#39;dplyr&#39;</code></pre>
+<pre><code>The following objects are masked from &#39;package:stats&#39;:
+
+    filter, lag</code></pre>
+<pre><code>The following objects are masked from &#39;package:base&#39;:
+
+    intersect, setdiff, setequal, union</code></pre>
+<pre class="r"><code>library(ggplot2)
+library(moonBook)
+library(webr)
+library(waffle)
+library(extrafont)</code></pre>
+<pre><code>Registering fonts with R</code></pre>
+<pre class="r"><code>library(grid)
+library(gridExtra)</code></pre>
+<pre><code>
+Attaching package: &#39;gridExtra&#39;</code></pre>
+<pre><code>The following object is masked from &#39;package:dplyr&#39;:
+
+    combine</code></pre>
+<pre class="r"><code>library(cowplot)</code></pre>
+<pre><code>
+********************************************************</code></pre>
+<pre><code>Note: As of version 1.0.0, cowplot does not change the</code></pre>
+<pre><code>  default ggplot2 theme anymore. To recover the previous</code></pre>
+<pre><code>  behavior, execute:
+  theme_set(theme_cowplot())</code></pre>
+<pre><code>********************************************************</code></pre>
+<pre class="r"><code>library(ggpubr)</code></pre>
+<pre><code>
+Attaching package: &#39;ggpubr&#39;</code></pre>
+<pre><code>The following object is masked from &#39;package:cowplot&#39;:
+
+    get_legend</code></pre>
+<pre class="r"><code>library(RColorBrewer)</code></pre>
+</div>
+<div id="read-files" class="section level3">
+<h3>Read files</h3>
+<pre class="r"><code>PRIOR = 20
+FDR = 0.05
+
+rm1 &lt;- read.csv(&quot;/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/GITHUB/Human_Development_ATACseq_bulk/output/humanATAC_peaks_cov2_rmBL.bed.saf.pe.q30.mx.hum.fix_filt.csv&quot;, row.names = 1)
+
+info = read.delim(&quot;/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/GITHUB/Human_Development_ATACseq_bulk/output/ATACseq_samplesheet.txt&quot;, header = TRUE, sep = &quot;\t&quot;, stringsAsFactors = F)
+info = info[c(8:20),]
+
+m = match(info$ID,names(rm1))
+rm2 = rm1[,m]
+
+rm1 = rm2
+
+sampleinfo = info
+levels(factor(sampleinfo$Group))</code></pre>
+<pre><code>[1] &quot;Adult&quot;</code></pre>
+<pre class="r"><code>levels(factor(sampleinfo$BinSex))</code></pre>
+<pre><code>[1] &quot;Adult_F&quot; &quot;Adult_M&quot;</code></pre>
+<pre class="r"><code>table(colnames(rm2)==sampleinfo$ID)</code></pre>
+<pre><code>
+TRUE 
+  13 </code></pre>
+<pre class="r"><code>matrix = rm2
+pheno = info</code></pre>
+</div>
+</div>
+<div id="sex-specific-differentially-regulated-genes-in-adult" class="section level1">
+<h1>Sex-specific Differentially Regulated Genes in Adult</h1>
+<div id="differential-gene-expresison-analysis" class="section level2">
+<h2>Differential gene expresison analysis</h2>
+<pre class="r"><code>attach(pheno)
+design = model.matrix(as.formula(&quot;~ 0  + BinSex + Batch&quot;))
+detach(pheno)
+design</code></pre>
+<pre><code>   BinSexAdult_F BinSexAdult_M Batch
+1              0             1     1
+2              0             1     1
+3              0             1     1
+4              0             1     2
+5              0             1     2
+6              0             1     2
+7              0             1     2
+8              1             0     2
+9              1             0     2
+10             1             0     2
+11             1             0     2
+12             1             0     2
+13             1             0     2
+attr(,&quot;assign&quot;)
+[1] 1 1 2
+attr(,&quot;contrasts&quot;)
+attr(,&quot;contrasts&quot;)$BinSex
+[1] &quot;contr.treatment&quot;</code></pre>
+<pre class="r"><code>D = DGEList(counts=matrix)
+D = calcNormFactors(D)
+D = estimateGLMCommonDisp(D, design)
+D = estimateGLMTagwiseDisp(D, design, prior.df = PRIOR)
+fit = glmFit(D, design, prior.count = PRIOR)
+
+Contrast = makeContrasts(FAdultvsMAdult = BinSexAdult_M - BinSexAdult_F,
+                         levels=design)
+
+res = list()
+contrast.name = colnames(Contrast)
+
+for(i in 1:length(contrast.name)){
+  lrt = glmLRT(fit, contrast = Contrast[,i])   
+  
+  results = lrt$table
+  disp = lrt$dispersion
+  fitted.vals = lrt$fitted.values
+  coefficients = lrt$coefficients
+  
+  results$adj.p.value = p.adjust(p = results$PValue, method = &quot;fdr&quot; )
+  table(row.names(results) == row.names(fitted.vals))
+  
+  Name = row.names(results)
+  res0 = cbind(Name, results, disp, fitted.vals, coefficients)
+  res[[i]] = res0[order(res0$adj.p.value),]
+
+  res[[i]]$Chr= gsub(&quot;.*_|:.*$&quot;, &quot;&quot;, rownames(res[[i]]))
+  
+  res[[i]] = mutate(res[[i]], cs= ifelse(res[[i]]$adj.p.value &lt;= 0.05 &amp; res[[i]]$logFC &lt;= 0 &amp; res[[i]]$Chr==&quot;X&quot;, &quot;tan2&quot;,
+                                         ifelse(res[[i]]$adj.p.value &lt;= 0.05 &amp; res[[i]]$logFC &lt;= 0 &amp; res[[i]]$Chr==&quot;Y&quot;, &quot;tan2&quot;, 
+                                                ifelse(res[[i]]$adj.p.value &lt;= 0.05 &amp; res[[i]]$logFC &gt;= 0 &amp; res[[i]]$Chr==&quot;Y&quot;, &quot;tan2&quot;,
+                                                       ifelse(res[[i]]$adj.p.value &lt;= 0.05 &amp; res[[i]]$logFC &gt;= 0 &amp; res[[i]]$Chr==&quot;X&quot;, &quot;tan2&quot;,
+                                                              ifelse(res[[i]]$adj.p.value &lt;= 0.05 &amp; res[[i]]$logFC &gt;= 0 ,&quot;dodgerblue1&quot;,
+                                                                     ifelse(res[[i]]$adj.p.value &lt;= 0.05 &amp; res[[i]]$logFC &lt;= 0 , &quot;deeppink1&quot;, &quot;grey80&quot;)))))))
+  
+  mxFDR = res[[i]][res[[i]]$adj.p.value &lt;= FDR,]
+  mxFDR_Up = mxFDR[mxFDR$logFC&gt;0,]
+  mxFDR_Dn = mxFDR[mxFDR$logFC&lt;0,]
+  
+  res[[i]]= mutate(res[[i]], FDR= nrow(mxFDR))
+  res[[i]]= mutate(res[[i]], FDRup= nrow(mxFDR_Up))
+  res[[i]]= mutate(res[[i]], FDRdn= nrow(mxFDR_Dn))
+
+  
+}
+
+for(i in 1:length(contrast.name)){
+  print(contrast.name[i])
+  print(table(res[[i]]$adj.p.value &lt; 0.05))
+}</code></pre>
+<pre><code>[1] &quot;FAdultvsMAdult&quot;
+
+FALSE  TRUE 
+97482   288 </code></pre>
+<pre class="r"><code>par(mfrow=c(1,1))
+
+for(i in 1:length(contrast.name)){
+
+  plot(res[[i]]$logCPM, res[[i]]$logFC, pch=20, cex=1, col=res[[i]]$cs, 
+        xlab = &quot;logCPM&quot;, ylab = &quot;logFC&quot;,
+        main = paste0(contrast.name[i], 
+                      &quot;\nFDR=0.05, N=&quot;, res[[i]][1,ncol(res[[i]])-2], 
+                      &quot;\nUp=&quot;,res[[i]][1,ncol(res[[i]])-1],&quot;, Dn=&quot;,res[[i]][1,ncol(res[[i]])]))
+}</code></pre>
+<p><img src="figure/07.EdgeR_and_ScatterPlot_Peaks_FvsM.Rmd/unnamed-chunk-4-1.png" width="384" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="genome-feature-of-peaks-enriched-in-female-or-male" class="section level1">
+<h1>Genome Feature of Peaks Enriched in Female or Male</h1>
+<div id="select-peaks-with-p0.01" class="section level2">
+<h2>Select peaks with p&lt;=0.01</h2>
+<pre><code>#!/bin/bash
+
+set -x
+
+
+#Create sets of foreground regions in bed format
+for XLS in *xls ; do
+
+  UP=$XLS.up.bed
+  DN=$XLS.dn.bed
+
+  awk &#39; $5&lt;0.01 &amp;&amp; $2&gt;0 {print $1&quot;\t&quot;$1}&#39; $XLS \
+  | cut -d &#39;_&#39; -f2- | sed &#39;s/:/\t/&#39; | sed &#39;s/-/\t/&#39; \
+  | bedtools sort &gt; $UP
+
+  awk &#39; $5&lt;0.01 &amp;&amp; $2&lt;0 {print $1&quot;\t&quot;$1}&#39; $XLS \
+  | cut -d &#39;_&#39; -f2- | sed &#39;s/:/\t/&#39; | sed &#39;s/-/\t/&#39; \
+  | bedtools sort &gt; $DN
+done
+
+#Create a set of background regions from those not changing in any comparison
+BG=$XLS.bg.bed
+tail -qn +2 *xls \
+| awk &#39;$5&gt;0.1 {print $1}&#39; \
+| sort | uniq -c \
+| cut -d &#39;_&#39; -f2- | tr &#39;:-&#39; &#39;\t&#39; \
+| bedtools sort &gt; $BG</code></pre>
+</div>
+<div id="homer-annotate-peaks" class="section level2">
+<h2>Homer annotate peaks</h2>
+<pre><code>#!/bin/bash
+set -x
+
+REF=/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/refgenome/Homo_sapiens.GRCh38.96.gtf
+
+#PATH=$PATH:/group/card2/Evangelyn_Sim/NGS/app/homer/.//bin/
+
+for BED in *.up.bed *.dn.bed ; do
+
+  OUT=$BED.homeranno.txt
+  mkdir go/$BED
+  annotatePeaks.pl $BED hg38 -gtf $REF -go go/$BED -annStats $BED.stats.txt &gt; $OUT
+
+done</code></pre>
+</div>
+<div id="plot-homer-peak-annotation-results" class="section level2">
+<h2>Plot Homer peak annotation results</h2>
+<pre class="r"><code>files = list.files(path = &quot;/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/20180726_hATACseq_MF/R/5.pks.mg.mapq30.rmBL.q30/6.pkstats/p001_MvF_20200624&quot;, pattern = &quot;.stats.txt&quot;, full.names = T)
+mx = lapply(files, read.delim, header=T, stringsAsFactors = F)
+
+for(i in 1:length(mx)){
+  mx[[i]] = mx[[i]][c(1:5),]
+  mx[[i]]$Number.of.peaks = as.numeric(mx[[i]]$Number.of.peaks)
+  mx[[i]]$totalpeaks = sum(mx[[i]]$Number.of.peaks)
+  mx[[i]]$percentage = round(mx[[i]]$Number.of.peaks/sum(mx[[i]]$Number.of.peaks) *100, digits = 2)
+  print(PieDonut(mx[[i]],aes(Annotation,count=Number.of.peaks),r0=0.5,start=3*pi/2,labelpositionThreshold=0.1, showPieName = T, showDonutName = T,
+                 title = gsub(&quot;/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/20180726_hATACseq_MF/R/5.pks.mg.mapq30.rmBL.q30/6.pkstats/p001_MvF_20200624/edgeR_ATAC_pks_all_hum_MvF_|.xls|.bed.stats.txt&quot;, &quot;&quot;, files[[i]])))
+}</code></pre>
+<p><img src="figure/07.EdgeR_and_ScatterPlot_Peaks_FvsM.Rmd/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /><img src="figure/07.EdgeR_and_ScatterPlot_Peaks_FvsM.Rmd/unnamed-chunk-5-2.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="transcription-factor-motif-enrichment-analysis-of-peaks-enriched-in-female-or-male-by-homer" class="section level1">
+<h1>Transcription Factor Motif Enrichment Analysis of Peaks Enriched in Female or Male by Homer</h1>
+<pre><code>#!/bin/bash
+
+set -x
+
+CWD=/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/20180726_hATACseq_MF/R/5.pks.mg.mapq30.rmBL.q30/7.homer/p001_all
+echo $CWD
+REF=/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/refgenome/Homo_sapiens.GRCh38.dna_sm.primary_assembly.fa
+
+#PATH=$PATH:/home/esim/software/.//bin/
+
+#Create sets of foreground regions in bed format
+for XLS in *xls ; do
+
+ UP=$XLS.up.bed
+ DN=$XLS.dn.bed
+
+  awk &#39; $5&lt;0.01 &amp;&amp; $2&gt;0 {print $1&quot;\t&quot;$1}&#39; $XLS \
+  | cut -d &#39;_&#39; -f2- | sed &#39;s/:/\t/&#39; | sed &#39;s/-/\t/&#39; \
+  | bedtools sort &gt; $UP
+
+  awk &#39; $5&lt;0.01 &amp;&amp; $2&lt;0 {print $1&quot;\t&quot;$1}&#39; $XLS \
+  | cut -d &#39;_&#39; -f2- | sed &#39;s/:/\t/&#39; | sed &#39;s/-/\t/&#39; \
+  | bedtools sort &gt; $DN
+done
+
+#Create a set of background regions from those not changing in any comparison
+BG=$XLS.bg.bed
+tail -qn +2 *xls \
+| awk &#39;$5&gt;0.1 {print $1}&#39; \
+| sort | uniq -c \
+| awk &#39;$1~/6/ {print $2}&#39; \
+| cut -d &#39;_&#39; -f2- | tr &#39;:-&#39; &#39;\t&#39; \
+| bedtools sort &gt; $BG
+
+cd $CWD
+
+#Call Homer enriched motifs with default background, then with ATAC peak BG
+for FG in *up.bed *dn.bed ; do
+ cd $CWD
+ BED=$CWD/$FG
+
+ #find enriched motifs
+  findMotifsGenome.pl $FG $REF $FG.df.out -p 10 -keepFiles
+
+  cd $FG.df.out
+  rm -rf instances
+  mkdir instances
+  cd instances
+
+  for i in ../homerResults/motif*.motif ; do
+    BASE=`basename $i`
+    mkdir $BASE
+    findMotifsGenome.pl $BED $REF $BASE -find $i | sort -k6gr &gt; $BASE/$BASE &amp;
+  done
+
+ cd $CWD
+done
+wait
+
+
+cd $CWD
+
+#Call Homer enriched motifs with ATAC peak BG
+for FG in *up.bed *dn.bed ; do
+  cd $CWD
+  BED=$CWD/$FG
+
+  #find enriched motifs
+  findMotifsGenome.pl $FG $REF $FG.out -bg $BG -p 10 -keepFiles
+
+  #find instances of enriched motifs
+  cd $FG.out
+  rm -rf instances
+  mkdir instances
+  cd instances
+
+  for i in ../homerResults/motif*.motif ; do
+    BASE=`basename $i`
+    mkdir $BASE
+    findMotifsGenome.pl $BED $REF $BASE -find $i | sort -k6gr &gt; $BASE/$BASE &amp;
+  done ; wait
+
+  cd $CWD
+done
+
+
+
+
+for MOTIF in `find . | grep instances | grep motif$` ; do
+  OUT=$MOTIF.bed
+  awk &#39;{print $1,$2,length($3)}&#39; $MOTIF \
+  | grep -v PositionID | cut -d &#39;_&#39; -f2 \
+  | tr &#39;:&#39; &#39;\t&#39; | sed &#39;s/-/\t/&#39; \
+  | awk &#39;{printf &quot;%s\t%.0f\t%.0f\n&quot;, $1,(($2+$3)/2)+$4-10,(($2+$3)/2)+$4+10}&#39; &gt; $OUT
+done</code></pre>
+<pre class="r"><code>mx1 = read.delim(&quot;/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/20180726_hATACseq_MF/R/5.pks.mg.mapq30.rmBL.q30/7.homer/p001_human_MvF_20200624/edgeR_ATAC_pks_all_hum_MvF_FAdultvsMAdult.xls.up.bed.df.out/knownResults.txt&quot;, header=TRUE, sep = &quot;\t&quot;)
+colnames(mx1) = c(&quot;Motif.Name&quot;,&quot;Consensus&quot;,&quot;P.value&quot;,&quot;Log.P.value&quot;,
+                  &quot;q.value..Benjamini.&quot;,&quot;Peak.number&quot;,&quot;Peak.number.with.Motif&quot;, 
+                  &quot;Background.number&quot;, &quot;Background.number.with.Motif&quot;)
+mx1$TF = gsub(&quot;[(].*&quot;, &quot;&quot;, mx1$Motif.Name)
+mx1$TF = gsub(&quot;/.*&quot;, &quot;&quot;, mx1$TF)
+mx1$TF = gsub(&quot;PGR&quot;,&quot;PR&quot;, mx1$TF)
+mx1$Log.P.value = -(mx1$Log.P.value)
+mx1 = mx1[!duplicated(mx1$TF),]
+mx1 = mx1[c(1:10),]
+mx1 = mx1[order(mx1$Log.P.value),]
+mx1$TF = toupper(mx1$TF)
+mx1$TF = factor(mx1$TF, levels = mx1$TF) 
+
+s1 = ggplot(mx1, aes(TF, Log.P.value, color=Log.P.value))+
+  geom_bar(stat = &quot;identity&quot;, fill=&quot;white&quot;, color=&quot;dodgerblue1&quot;) +
+  labs(title = &quot;TF enriched in male&quot;)+
+  theme_minimal()+
+  coord_flip()
+
+
+mx2 = read.delim(&quot;/group/card2/Evangelyn_Sim/Transcriptome_chromatin_human/Sequencing_ATAC_RNA/20180726_hATACseq_MF/R/5.pks.mg.mapq30.rmBL.q30/7.homer/p001_human_MvF_20200624/edgeR_ATAC_pks_all_hum_MvF_FAdultvsMAdult.xls.dn.bed.df.out/knownResults.txt&quot;, header=TRUE, sep = &quot;\t&quot;)
+colnames(mx2) = c(&quot;Motif.Name&quot;,&quot;Consensus&quot;,&quot;P.value&quot;,&quot;Log.P.value&quot;,
+                  &quot;q.value..Benjamini.&quot;,&quot;Peak.number&quot;,&quot;Peak.number.with.Motif&quot;, 
+                  &quot;Background.number&quot;, &quot;Background.number.with.Motif&quot;)
+mx2$TF = gsub(&quot;[(].*&quot;, &quot;&quot;, mx2$Motif.Name)
+mx2$TF = gsub(&quot;/.*&quot;, &quot;&quot;, mx2$TF)
+mx2$Log.P.value = -(mx2$Log.P.value)
+mx2 = mx2[!duplicated(mx2$TF),]
+mx2 = mx2[c(1:10),]
+mx2 = mx2[order(mx2$Log.P.value),]
+mx2$TF = toupper(mx2$TF)
+mx2$TF = factor(mx2$TF, levels = mx2$TF) 
+
+s2 = ggplot(mx2, aes(TF, Log.P.value, color=Log.P.value))+
+  geom_bar(stat = &quot;identity&quot;, fill=&quot;white&quot;, color=&quot;deeppink1&quot;) +
+  labs(title = &quot;TF enriched in female&quot;)+
+  theme_minimal()+
+  coord_flip()</code></pre>
+<pre class="r"><code>multi = arrangeGrob(s1,s2,
+                    ncol = 2, nrow = 1)
+plot = as_ggplot(multi)
+
+plot</code></pre>
+<p><img src="figure/07.EdgeR_and_ScatterPlot_Peaks_FvsM.Rmd/unnamed-chunk-7-1.png" width="960" style="display: block; margin: auto;" /></p>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 3.6.1 (2019-07-05)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: CentOS Linux 7 (Core)
+
+Matrix products: default
+BLAS:   /hpc/software/installed/R/3.6.1/lib64/R/lib/libRblas.so
+LAPACK: /hpc/software/installed/R/3.6.1/lib64/R/lib/libRlapack.so
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+attached base packages:
+[1] grid      stats     graphics  grDevices utils     datasets  methods  
+[8] base     
+
+other attached packages:
+ [1] RColorBrewer_1.1-2 ggpubr_0.4.0       cowplot_1.0.0      gridExtra_2.3     
+ [5] extrafont_0.17     waffle_0.7.0       webr_0.1.5         moonBook_0.2.3    
+ [9] ggplot2_3.3.2      dplyr_1.0.2        edgeR_3.26.8       limma_3.40.6      
+[13] workflowr_1.6.2   
+
+loaded via a namespace (and not attached):
+  [1] nlme_3.1-150       fs_1.5.0           insight_0.9.0     
+  [4] rprojroot_1.3-2    tools_3.6.1        backports_1.1.10  
+  [7] R6_2.5.0           DT_0.14            sjlabelled_1.1.6  
+ [10] colorspace_1.4-1   withr_2.3.0        tidyselect_1.1.0  
+ [13] mnormt_1.5-6       extrafontdb_1.0    curl_4.3          
+ [16] compiler_3.6.1     git2r_0.27.1       flextable_0.5.10  
+ [19] xml2_1.3.2         officer_0.3.12     labeling_0.4.2    
+ [22] scales_1.1.1       lmtest_0.9-38      psych_1.9.12.31   
+ [25] readr_1.4.0        systemfonts_0.2.3  stringr_1.4.0     
+ [28] digest_0.6.27      foreign_0.8-71     editData_0.1.2    
+ [31] rmarkdown_2.5      rio_0.5.16         base64enc_0.1-3   
+ [34] pkgconfig_2.0.3    htmltools_0.5.0    fastmap_1.0.1     
+ [37] highr_0.8          rvg_0.2.5          htmlwidgets_1.5.2 
+ [40] rlang_0.4.7        readxl_1.3.1       rstudioapi_0.11   
+ [43] shiny_1.5.0        farver_2.0.3       generics_0.1.0    
+ [46] zoo_1.8-8          jsonlite_1.7.0     zip_2.1.1         
+ [49] car_3.0-10         magrittr_1.5       Rcpp_1.0.5        
+ [52] munsell_0.5.0      abind_1.4-5        gdtools_0.2.2     
+ [55] lifecycle_0.2.0    stringi_1.5.3      whisker_0.4       
+ [58] yaml_2.2.1         carData_3.0-4      MASS_7.3-51.6     
+ [61] parallel_3.6.1     promises_1.1.1     sjmisc_2.8.5      
+ [64] forcats_0.5.0      crayon_1.3.4       miniUI_0.1.1.1    
+ [67] lattice_0.20-41    haven_2.3.1        hms_0.5.3         
+ [70] locfit_1.5-9.4     knitr_1.30         pillar_1.4.6      
+ [73] uuid_0.1-4         ggsignif_0.6.0     glue_1.4.2        
+ [76] evaluate_0.14      data.table_1.13.2  vcd_1.4-8         
+ [79] vctrs_0.3.2        tweenr_1.0.1       httpuv_1.5.4      
+ [82] Rttf2pt1_1.3.8     cellranger_1.1.0   gtable_0.3.0      
+ [85] purrr_0.3.4        polyclip_1.10-0    tidyr_1.1.2       
+ [88] xfun_0.18          ggforce_0.3.2      openxlsx_4.2.3    
+ [91] mime_0.9           xtable_1.8-4       broom_0.7.0       
+ [94] rstatix_0.6.0      later_1.1.0.1      tibble_3.0.3      
+ [97] shinyWidgets_0.5.4 rrtable_0.2.1      ellipsis_0.3.1    
+[100] ztable_0.2.0       devEMF_3.8        </code></pre>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+http://docs.mathjax.org/en/latest/configuration.html.  This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
