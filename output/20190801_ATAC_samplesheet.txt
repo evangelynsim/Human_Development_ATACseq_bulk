@@ -1,0 +1,28 @@
+Group	Age	Code	Sex	Region	Batch	BinSex	ID	ID2	ID3	ID4
+Fetal	19wks	6565	M	LV	1	Fetal_M	f19w6565	M_6565	Fetal1	Fetal1_M
+Fetal	19wks	6569	M	LV	1	Fetal_M	f19w6569	M_6569	Fetal2	Fetal2_M
+Fetal	20wks	6572	F	LV	1	Fetal_F	f20w	F_6572	Fetal3	Fetal3_F
+Young	3wks	6012	M	LV	1	Young_M	3w	M_6012	Young1	Young1_M
+Young	10wks	4087	F	LV/ IVS	1	Young_F	10w	F_4087	Young2	Young2_F
+Young	2yrs	7050	M	LV	1	Young_M	2y	M_7050	Young3	Young3_M
+Young	4yrs	4152	M	LV	1	Young_M	4y	M_4152	Young4	Young4_M
+Adult	40yrs	6008	M	LV	1	Adult_M	40y	M_6008	Adult1	Adult1_M
+Adult	44yrs	3122	M	LV	1	Adult_M	44y	M_3122	Adult2	Adult2_M
+Adult	62yrs	7028	M	LV	1	Adult_M	62y	M_7028	Adult3	Adult3_M
+Adult	47yrs	3115	M	LV	2	Adult_M	3115	M_3115	Adult4	Adult4_M
+Adult	52yrs	3141	M	LV/ IVS	2	Adult_M	3141	M_3141	Adult5	Adult5_M
+Adult	54yrs	3064	M	unsure	2	Adult_M	3064	M_3064	Adult6	Adult6_M
+Adult	60yrs	6086	M	LV	2	Adult_M	6086	M_6086	Adult7	Adult7_M
+Adult	41yrs	3073	F	LV	2	Adult_F	3073	F_3073	Adult8	Adult8_F
+Adult	48yrs	5089	F	unsure	2	Adult_F	5089	F_5089	Adult9	Adult9_F
+Adult	48yrs	5090	F	unsure	2	Adult_F	5090	F_5090	Adult10	Adult10_F
+Adult	54yrs	6048	F	unsure	2	Adult_F	6048	F_6048	Adult11	Adult11_F
+Adult	62yrs	6076	F	unsure	2	Adult_F	6076	F_6076	Adult12	Adult12_F
+Adult	65yrs	4049	F	unsure	2	Adult_F	4049	F_4049	Adult13	Adult13_F
+hiPSCCM	PB11	PB11n1	M	hiPSC-CM	2	hiPSCCM_M	PB11n1	M_PB11n1	hiPSCCM1	hiPSCCM1_M
+hiPSCCM	PB11	PB11n2	M	hiPSC-CM	2	hiPSCCM_M	PB11n2	M_PB11n2	hiPSCCM2	hiPSCCM2_M
+hiPSCCM	PB11	PB11n3	M	hiPSC-CM	2	hiPSCCM_M	PB11n3	M_PB11n3	hiPSCCM3	hiPSCCM3_M
+hiPSCCM	PB11	PB11n5	M	hiPSC-CM	2	hiPSCCM_M	PB11n5	M_PB11n5	hiPSCCM4	hiPSCCM4_M
+hiPSCCM	PB44	PB44n4	F	hiPSC-CM	2	hiPSCCM_F	PB44n4	F_PB44n4	hiPSCCM5	hiPSCCM5_F
+hiPSCCM	PB44	PB44n5	F	hiPSC-CM	2	hiPSCCM_F	PB44n5	F_PB44n5	hiPSCCM6	hiPSCCM6_F
+hiPSCCM	PB44	PB44n6	F	hiPSC-CM	2	hiPSCCM_F	PB44n6	F_PB44n6	hiPSCCM7	hiPSCCM7_F
